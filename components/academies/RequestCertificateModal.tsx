@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, Copy, CheckCircle, ChevronRight, QrCode, Building, MapPin, DollarSign, Loader2, CreditCard, ShieldCheck, RefreshCw } from 'lucide-react';
+import { X, Check, Copy, CheckCircle, ChevronRight, QrCode, Building, MapPin, DollarSign, Loader2, CreditCard, ShieldCheck, RefreshCw, Edit } from 'lucide-react';
 import { Academy } from '../../types';
 import { formatCurrency } from '../../utils/formatters';
 import { useAuth } from '../../context/AuthContext';
@@ -11,6 +11,7 @@ interface RequestCertificateModalProps {
     price: number;
     isOpen: boolean;
     onClose: () => void;
+    onEdit?: () => void;
     onConfirm: (
         academy: Academy, 
         customerData: { name: string, email: string, taxId: string, phone: string }
@@ -20,7 +21,7 @@ interface RequestCertificateModalProps {
 }
 
 export const RequestCertificateModal: React.FC<RequestCertificateModalProps> = ({
-    academy, price, isOpen, onClose, onConfirm, isSubmitting, onSuccess
+    academy, price, isOpen, onClose, onEdit, onConfirm, isSubmitting, onSuccess
 }) => {
     const { user } = useAuth();
     const { addToast } = useToast();
@@ -159,9 +160,19 @@ export const RequestCertificateModal: React.FC<RequestCertificateModalProps> = (
                             </p>
 
                             <div className="bg-gray-50 dark:bg-slate-900/50 p-5 rounded-2xl space-y-3 border border-gray-100 dark:border-slate-700">
-                                <div>
-                                    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">Academia / Equipe</label>
-                                    <p className="text-base font-black dark:text-white">{academy.teamName || academy.name}</p>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-0.5">Academia / Equipe</label>
+                                        <p className="text-base font-black dark:text-white">{academy.teamName || academy.name}</p>
+                                    </div>
+                                    {onEdit && (
+                                        <button 
+                                            onClick={onEdit}
+                                            className="px-4 py-2 bg-blue-50 text-cbjjs-blue rounded-xl hover:bg-blue-100 font-black text-[10px] uppercase flex items-center gap-2 transition-all active:scale-95 shadow-sm"
+                                        >
+                                            <Edit size={14}/> Editar
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="flex items-start gap-2">
                                     <MapPin size={14} className="text-cbjjs-blue mt-0.5 shrink-0" />

@@ -275,6 +275,12 @@ export const AcademyRegister: React.FC = () => {
                     price={price}
                     isOpen={!!requestingAcademy}
                     onClose={() => setRequestingAcademy(null)}
+                    onEdit={() => {
+                        const academyToEdit = requestingAcademy;
+                        setRequestingAcademy(null); 
+                        startEditing(academyToEdit); 
+                        setSelectedAcademy(academyToEdit);
+                    }}
                     onConfirm={handleRequest}
                     isSubmitting={isRequesting}
                     onSuccess={fetchMyCertificates}
