@@ -136,22 +136,22 @@ export const AdminAcademyCertificates: React.FC = () => {
                 </div>
             </div>
 
-            <div className="flex p-1.5 bg-gray-100 dark:bg-slate-900 rounded-2xl w-fit">
-                <button 
+            <div className="flex w-full md:w-fit p-1.5 bg-gray-100 dark:bg-slate-900 rounded-2xl">
+                <button
                     onClick={() => setActiveTab('NEW')}
-                    className={`px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeTab === 'NEW' ? 'bg-white dark:bg-slate-800 text-cbjjs-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`flex-1 md:flex-none px-4 md:px-8 py-3 rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest transition-all ${activeTab === 'NEW' ? 'bg-white dark:bg-slate-800 text-cbjjs-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
-                    Novos Pedidos
+                    Novos
                 </button>
                 <button
                     onClick={() => setActiveTab('DELIVERED')}
-                    className={`px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeTab === 'DELIVERED' ? 'bg-white dark:bg-slate-800 text-cbjjs-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`flex-1 md:flex-none px-4 md:px-8 py-3 rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest transition-all ${activeTab === 'DELIVERED' ? 'bg-white dark:bg-slate-800 text-cbjjs-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     Entregues
                 </button>
                 <button
                     onClick={() => setActiveTab('CANCELLED')}
-                    className={`px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeTab === 'CANCELLED' ? 'bg-white dark:bg-slate-800 text-cbjjs-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`flex-1 md:flex-none px-4 md:px-8 py-3 rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest transition-all ${activeTab === 'CANCELLED' ? 'bg-white dark:bg-slate-800 text-cbjjs-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     Cancelados
                 </button>
