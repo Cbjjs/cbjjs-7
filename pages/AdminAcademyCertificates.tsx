@@ -11,7 +11,8 @@ import {
     Calendar,
     DollarSign,
     Loader2,
-    X
+    X,
+    ChevronDown
 } from 'lucide-react';
 import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { certificateService } from '../services/certificateService';
@@ -23,7 +24,7 @@ import { useToast } from '../context/ToastContext';
 export const AdminAcademyCertificates: React.FC = () => {
     const { addToast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedMonth, setSelectedMonth] = useState('');
+    const [selectedDate, setSelectedDate] = useState('');
     const [activeTab, setActiveTab] = useState<'NEW' | 'DELIVERED' | 'CANCELLED'>('NEW');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
 
@@ -43,9 +44,9 @@ export const AdminAcademyCertificates: React.FC = () => {
 
     const paidCertificates = certificates.filter(c => {
         const isPaid = c.statusPayment === CertificatePaymentStatus.PAID;
-        if (!selectedMonth) return isPaid;
+        if (!selectedDate) return isPaid;
         const d = new Date(c.createdAt);
-        return isPaid && `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === selectedMonth;
+        return isPaid && d.toISOString().split('T')[0] === selectedDate;
     });
     const totalPaidCount = paidCertificates.length;
     const totalSalesAmount = paidCertificates.reduce((sum, c) => sum + (c.amount || 0), 0);
@@ -56,16 +57,16 @@ export const AdminAcademyCertificates: React.FC = () => {
             cert.owner?.fullName?.toLowerCase().includes(searchTerm.toLowerCase());
         
         const d = new Date(cert.createdAt);
-        const matchesMonth = !selectedMonth || `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}` === selectedMonth;
+        const matchesDate = !selectedDate || d.toISOString().split('T')[0] === selectedDate;
 
         if (activeTab === 'NEW') {
-            return matchesSearch && matchesMonth &&
+            return matchesSearch && matchesDate &&
                    cert.statusDelivery !== CertificateDeliveryStatus.DELIVERED &&
                    cert.statusDelivery !== CertificateDeliveryStatus.CANCELLED;
         } else if (activeTab === 'DELIVERED') {
-            return matchesSearch && matchesMonth && cert.statusDelivery === CertificateDeliveryStatus.DELIVERED;
+            return matchesSearch && matchesDate && cert.statusDelivery === CertificateDeliveryStatus.DELIVERED;
         } else {
-            return matchesSearch && matchesMonth && cert.statusDelivery === CertificateDeliveryStatus.CANCELLED;
+            return matchesSearch && matchesDate && cert.statusDelivery === CertificateDeliveryStatus.CANCELLED;
         }
     });
 
@@ -139,22 +140,25 @@ export const AdminAcademyCertificates: React.FC = () => {
                             className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-cbjjs-blue transition-all dark:text-white"
                         />
                     </div>
-                    <div className="relative flex-1 md:w-48">
-                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <div className="relative flex-1 md:w-52">
+                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                         <input
-                            type="month"
-                            value={selectedMonth}
-                            onChange={(e) => setSelectedMonth(e.target.value)}
-                            className="w-full pl-12 pr-10 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-cbjjs-blue transition-all dark:text-white"
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            className="w-full pl-12 pr-12 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-cbjjs-blue transition-all dark:text-white cursor-pointer"
                         />
-                        {selectedMonth && (
-                            <button
-                                onClick={() => setSelectedMonth('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
-                            >
-                                <X size={14} />
-                            </button>
-                        )}
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
+                            {selectedDate && (
+                                <button
+                                    onClick={(e) => { e.preventDefault(); setSelectedDate(''); }}
+                                    className="p-1 hover:text-red-500 transition-colors pointer-events-auto"
+                                >
+                                    <X size={14} className="text-gray-400" />
+                                </button>
+                            )}
+                            <ChevronDown size={14} className="text-gray-400" />
+                        </div>
                     </div>
                     <button onClick={() => refetch()} className="p-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl hover:bg-gray-50 transition-all text-cbjjs-blue shadow-sm shrink-0 flex items-center justify-center">
                         <RefreshCw size={22} className={isLoading ? 'animate-spin' : ''} />
