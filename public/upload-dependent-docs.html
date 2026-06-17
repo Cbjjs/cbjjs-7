@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CBJJS - Documentos do Filho</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cbjjs: { blue: '#1e3a8a', green: '#16a34a', gold: '#eab308' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .upload-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .upload-card:active { transform: scale(0.98); }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
+        .loading-overlay { display: none; }
+        .loading-overlay.active { display: flex; }
+        .modal { display: none; }
+        .modal.active { display: flex; }
+        .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen pb-10">
+
+    <header class="bg-white border-b px-6 py-4 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+        <div class="flex items-center gap-3">
+            <img src="https://saltonaweb.sh27.com.br/cbjjs/cbjjs.png" alt="CBJJS" class="w-10 h-auto">
+            <h1 class="font-black text-xl tracking-tighter">Portal de Envio</h1>
+        </div>
+        <button onclick="window.location.href='/#my-dependents'" class="text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2">Voltar</button>
+    </header>
+
+    <main class="max-w-md mx-auto px-6 pt-8">
+        <div id="user-info" class="mb-8">
+            <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-[0.2em] mb-1">Filho Atleta</p>
+            <h2 id="user-name" class="text-2xl font-black text-slate-900 leading-tight">Carregando...</h2>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-100 p-4 rounded-2xl mb-8 flex gap-3">
+            <svg class="text-amber-600 shrink-0 mt-0.5" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <p class="text-[11px] font-bold text-amber-700 leading-relaxed uppercase">Atenção: A aprovação na federação depende do envio correto destes documentos.</p>
+        </div>
+
+        <div class="space-y-6">
+            <div id="card-profile" onclick="document.getElementById('input-profile').click()" class="upload-card bg-white p-8 rounded-[2rem] border-2 border-dashed border-slate-200 flex flex-col items-center text-center gap-4 hover:border-cbjjs-blue hover:bg-blue-50/30">
+                <div class="w-16 h-16 bg-blue-50 text-cbjjs-blue rounded-2xl flex items-center justify-center">
+                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <div>
+                    <h3 class="font-black text-sm uppercase tracking-tight">Foto para Carteirinha</h3>
+                    <p id="status-profile" class="text-[10px] font-bold text-gray-400 uppercase mt-2">Toque para selecionar</p>
+                </div>
+                <input type="file" id="input-profile" class="hidden" accept="image/*">
+            </div>
+
+            <div id="card-identity" onclick="document.getElementById('input-identity').click()" class="upload-card bg-white p-8 rounded-[2rem] border-2 border-dashed border-slate-200 flex flex-col items-center text-center gap-4 hover:border-cbjjs-blue hover:bg-blue-50/30">
+                <div class="w-16 h-16 bg-blue-50 text-cbjjs-blue rounded-2xl flex items-center justify-center">
+                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                </div>
+                <div>
+                    <h3 class="font-black text-sm uppercase tracking-tight">Identidade (RG/Certidão) - Frente e Verso</h3>
+                    <p id="status-identity" class="text-[10px] font-bold text-gray-400 uppercase mt-2">Toque para selecionar</p>
+                </div>
+                <input type="file" id="input-identity" class="hidden" accept="image/*,.pdf">
+            </div>
+
+            <div id="card-medical" onclick="document.getElementById('input-medical').click()" class="upload-card bg-white p-8 rounded-[2rem] border-2 border-dashed border-slate-200 flex flex-col items-center text-center gap-4 hover:border-cbjjs-blue hover:bg-blue-50/30">
+                <div class="w-16 h-16 bg-blue-50 text-cbjjs-blue rounded-2xl flex items-center justify-center">
+                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5l4 4L7 21 3 17l13.5-13.5zM14 5l4 4"></path></svg>
+                </div>
+                <div>
+                    <h3 class="font-black text-sm uppercase tracking-tight">Atestado Médico</h3>
+                    <p id="status-medical" class="text-[10px] font-bold text-gray-400 uppercase mt-1">Toque para selecionar</p>
+                </div>
+                <input type="file" id="input-medical" class="hidden" accept="image/*,.pdf">
+            </div>
+
+            <div id="card-belt" onclick="document.getElementById('input-belt').click()" class="upload-card bg-white p-8 rounded-[2rem] border-2 border-dashed border-slate-200 flex flex-col items-center text-center gap-4 hover:border-cbjjs-blue hover:bg-blue-50/30">
+                <div class="w-16 h-16 bg-blue-50 text-cbjjs-blue rounded-2xl flex items-center justify-center">
+                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15l-2 5L9 9l11 4-5 2zm0 0l4 4M5 5h14v4M5 5v14h4"></path></svg>
+                </div>
+                <div>
+                    <h3 class="font-black text-sm uppercase tracking-tight">Certificado de Faixa</h3>
+                    <p id="status-belt" class="text-[10px] font-bold text-gray-400 uppercase mt-2">Toque para selecionar</p>
+                </div>
+                <input type="file" id="input-belt" class="hidden" accept="image/*,.pdf">
+            </div>
+        </div>
+
+        <!-- Checkbox de Aceite -->
+        <div class="mt-8 flex items-start">
+            <input type="checkbox" id="declaration-check" onchange="checkDeclaration()" class="mt-1 w-4 h-4 text-cbjjs-blue bg-gray-100 border-gray-300 rounded focus:ring-cbjjs-blue">
+            <label for="declaration-check" class="ml-3 text-sm text-gray-700 leading-relaxed">
+                Declaro que li a 
+                <a href="#" onclick="openModal('declaration-modal'); return false;" class="text-cbjjs-blue underline font-bold">Declaração</a>, 
+                compreendi e estou ciente das consequências legais e administrativas decorrentes de declaração falsa.
+            </label>
+        </div>
+        
+        <button id="btn-finish" onclick="handleConcluir()" class="w-full mt-10 bg-cbjjs-blue text-white py-5 rounded-[2rem] font-black uppercase text-xs tracking-widest shadow-2xl shadow-blue-500/30 transition-all opacity-50 pointer-events-none">
+            Concluir Cadastro
+        </button>
+    </main>
+
+    <!-- Modal de Declaração de Veracidade -->
+    <div id="declaration-modal" class="modal fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] items-center justify-center p-6">
+        <div class="bg-white rounded-[2.5rem] w-full max-w-md p-8 shadow-2xl relative animate-fadeIn">
+            <button onclick="closeModal('declaration-modal')" class="absolute top-6 right-6 text-gray-400 hover:text-gray-900">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+            </button>
+            <h3 class="text-xl font-black mb-4 text-cbjjs-blue">Declaração de Veracidade</h3>
+            <div class="max-h-96 overflow-y-auto pr-2 space-y-4 text-sm text-gray-700 leading-relaxed">
+                <p class="font-bold">Declaração de Veracidade e Responsabilidade Legal</p>
+                <p>Ao cadastrar meu dependente na CBJJS, declaro que todas as informações informadas são verdadeiras, especialmente quanto à graduação/faixa.</p>
+                <p>A declaração falsa configura crime de falsidade ideológica (art. 299 do Código Penal). Independentemente das medidas judiciais, a CBJJS aplicará sanções administrativas imediatas.</p>
+            </div>
+            <button onclick="closeModal('declaration-modal')" class="w-full mt-8 bg-gray-100 text-gray-500 py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest">Fechar</button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] items-center justify-center flex-col text-white">
+        <svg class="animate-spin mb-4" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg>
+        <p class="font-black text-xs uppercase tracking-[0.3em]">Enviando...</p>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://sbrswtbtcsfomnggeugr.supabase.co'; 
+        const supabaseKey = 'sb_publishable_X47WKoQ7J-GOHQ9p3l-D3Q_LzKtEpJA';
+        const _supabase = window.supabase.createClient(supabaseUrl, supabaseKey, { auth: { storageKey: 'cbjjs-auth-token' } });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const childId = urlParams.get('id');
+        if (!childId) window.location.href = '/';
+
+        function checkDeclaration() {
+            const btn = document.getElementById('btn-finish');
+            const checkbox = document.getElementById('declaration-check');
+            if (checkbox.checked) btn.classList.remove('opacity-50', 'pointer-events-none');
+            else btn.classList.add('opacity-50', 'pointer-events-none');
+        }
+
+        async function init() {
+            const { data } = await _supabase.from('dependents').select('full_name, profile_image_url, doc_identity_url, doc_medical_url, doc_belt_url').eq('id', childId).single();
+            if (data) {
+                document.getElementById('user-name').innerText = data.full_name;
+                if (data.profile_image_url) markAsDone('profile');
+                if (data.doc_identity_url) markAsDone('identity');
+                if (data.doc_medical_url) markAsDone('medical');
+                if (data.doc_belt_url) markAsDone('belt');
+            }
+        }
+
+        function markAsDone(type) {
+            const card = document.getElementById(`card-${type}`);
+            const status = document.getElementById(`status-${type}`);
+            card.classList.remove('border-slate-200');
+            card.classList.add('border-cbjjs-green', 'bg-green-50');
+            status.innerText = 'Enviado com Sucesso!';
+            status.classList.remove('text-gray-400');
+            status.classList.add('text-cbjjs-green');
+        }
+
+        async function handleUpload(file, type) {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.classList.add('active');
+            try {
+                const fileExt = file.name.split('.').pop().toLowerCase();
+                const fileName = `${type}_${childId}_${Date.now()}.${fileExt}`;
+                const folder = type === 'profile' ? 'avatars' : 'documents';
+                
+                await _supabase.storage.from(folder).upload(`dependents/${childId}/${fileName}`, file, { upsert: true });
+                const { data: { publicUrl } } = _supabase.storage.from(folder).getPublicUrl(`dependents/${childId}/${fileName}`);
+                
+                let dbUpdates = {};
+                if (type === 'profile') dbUpdates = { profile_image_url: publicUrl, doc_profile_status: 'PENDING' };
+                else if (type === 'identity') dbUpdates = { doc_identity_url: publicUrl, doc_identity_status: 'PENDING' };
+                else if (type === 'medical') dbUpdates = { doc_medical_url: publicUrl, doc_medical_status: 'PENDING' };
+                else if (type === 'belt') dbUpdates = { doc_belt_url: publicUrl, doc_belt_status: 'PENDING' };
+                
+                await _supabase.from('dependents').update(dbUpdates).eq('id', childId);
+                markAsDone(type);
+            } catch (err) { alert(err.message); } finally { overlay.classList.remove('active'); }
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function handleConcluir() { window.location.href = '/#my-dependents'; }
+
+        document.getElementById('input-profile').onchange = (e) => e.target.files[0] && handleUpload(e.target.files[0], 'profile');
+        document.getElementById('input-identity').onchange = (e) => e.target.files[0] && handleUpload(e.target.files[0], 'identity');
+        document.getElementById('input-medical').onchange = (e) => e.target.files[0] && handleUpload(e.target.files[0], 'medical');
+        document.getElementById('input-belt').onchange = (e) => e.target.files[0] && handleUpload(e.target.files[0], 'belt');
+
+        init();
+    </script>
+</body>
+</html>

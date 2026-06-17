@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CBJJS - Portal de Documentos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cbjjs: { blue: '#1e3a8a', green: '#16a34a', gold: '#eab308' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .upload-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .upload-card:active { transform: scale(0.98); }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .animate-spin { animation: spin 1s linear infinite; }
+        .loading-overlay { display: none; }
+        .loading-overlay.active { display: flex; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen pb-10">
+
+    <header class="bg-white border-b px-6 py-4 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+        <div class="flex items-center gap-3">
+            <img src="https://saltonaweb.sh27.com.br/cbjjs/cbjjs.png" alt="CBJJS" class="w-10 h-auto">
+            <h1 class="font-black text-xl tracking-tighter">Portal de Envio</h1>
+        </div>
+        <button onclick="window.location.href='/'" class="text-xs font-bold text-gray-400 uppercase tracking-widest px-3 py-2">Cancelar</button>
+    </header>
+
+    <main class="max-w-md mx-auto px-6 pt-8">
+        <div id="academy-info" class="mb-8">
+            <p class="text-[10px] font-bold text-cbjjs-blue uppercase tracking-[0.2em] mb-1">Unidade Selecionada</p>
+            <h2 id="academy-name" class="text-2xl font-black text-slate-900 leading-tight">Carregando unidade...</h2>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-100 p-4 rounded-2xl mb-8 flex gap-3">
+            <svg class="text-amber-600 shrink-0 mt-0.5" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            <p class="text-[11px] font-bold text-amber-700 leading-relaxed uppercase">Atenção: Envie o documento aberto para que frente e verso apareçam na mesma imagem.</p>
+        </div>
+
+        <div class="space-y-6">
+            <div id="card-cert" onclick="document.getElementById('input-cert').click()" class="upload-card bg-white p-8 rounded-[2rem] border-2 border-dashed border-slate-200 flex flex-col items-center text-center gap-4 hover:border-cbjjs-blue hover:bg-blue-50/30">
+                <div class="w-16 h-16 bg-blue-50 text-cbjjs-blue rounded-2xl flex items-center justify-center">
+                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15l-2 5L9 9l11 4-5 2zm0 0l4 4M5 5h14v4M5 5v14h4"></path></svg>
+                </div>
+                <div>
+                    <h3 class="font-black text-sm uppercase tracking-tight">Diploma Faixa Preta</h3>
+                    <p id="status-cert" class="text-[10px] font-bold text-gray-400 uppercase mt-1">Toque para selecionar</p>
+                </div>
+                <input type="file" id="input-cert" class="hidden" accept="image/*,.pdf">
+            </div>
+
+            <div id="card-ident" onclick="document.getElementById('input-ident').click()" class="upload-card bg-white p-8 rounded-[2rem] border-2 border-dashed border-slate-200 flex flex-col items-center text-center gap-4 hover:border-cbjjs-blue hover:bg-blue-50/30">
+                <div class="w-16 h-16 bg-blue-50 text-cbjjs-blue rounded-2xl flex items-center justify-center">
+                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                </div>
+                <div>
+                    <h3 class="font-black text-sm uppercase tracking-tight">Identidade (RG/CNH)</h3>
+                    <p id="status-ident" class="text-[10px] font-bold text-gray-400 uppercase mt-1">Toque para selecionar</p>
+                </div>
+                <input type="file" id="input-ident" class="hidden" accept="image/*,.pdf">
+            </div>
+        </div>
+
+        <button id="btn-finish" onclick="window.location.href='/'" class="w-full mt-10 bg-cbjjs-blue text-white py-5 rounded-[2rem] font-black uppercase text-xs tracking-widest shadow-2xl shadow-blue-500/30 transition-all opacity-50 pointer-events-none">
+            Concluir e Voltar
+        </button>
+    </main>
+
+    <div id="loading-overlay" class="loading-overlay fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] items-center justify-center flex-col text-white">
+        <svg class="animate-spin mb-4" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path></svg>
+        <p id="loading-text" class="font-black text-xs uppercase tracking-[0.3em]">Processando...</p>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://sbrswtbtcsfomnggeugr.supabase.co'; 
+        const supabaseKey = 'sb_publishable_X47WKoQ7J-GOHQ9p3l-D3Q_LzKtEpJA';
+        
+        const _supabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
+            auth: { storageKey: 'cbjjs-auth-token' }
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const academyId = urlParams.get('id');
+        let uploadsDone = { cert: false, ident: false };
+
+        if (!academyId) {
+            alert('Erro: Academia não identificada.');
+            window.location.href = '/';
+        }
+
+        async function init() {
+            try {
+                const { data: { session } } = await _supabase.auth.getSession();
+                if (!session) {
+                    alert('Sessão expirada. Refaça o login no app principal.');
+                    window.location.href = '/';
+                    return;
+                }
+
+                const { data: academy, error } = await _supabase
+                    .from('academies')
+                    .select('name, certificate_url, identity_url')
+                    .eq('id', academyId)
+                    .single();
+
+                if (error) throw error;
+                if (academy) {
+                    document.getElementById('academy-name').innerText = academy.name;
+                    if (academy.certificate_url) markAsDone('cert', true);
+                    if (academy.identity_url) markAsDone('ident', true);
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('academy-name').innerText = "Erro ao carregar dados.";
+            }
+        }
+
+        function markAsDone(type, isInitial = false) {
+            uploadsDone[type] = true;
+            const card = document.getElementById(`card-${type}`);
+            const status = document.getElementById(`status-${type}`);
+            card.classList.remove('border-slate-200');
+            card.classList.add('border-cbjjs-green', 'bg-green-50');
+            status.innerText = isInitial ? 'Documento já cadastrado' : 'Enviado com Sucesso!';
+            status.classList.remove('text-gray-400');
+            status.classList.add('text-cbjjs-green');
+            checkFinish();
+        }
+
+        function checkFinish() {
+            if (uploadsDone.cert || uploadsDone.ident) {
+                const btn = document.getElementById('btn-finish');
+                btn.classList.remove('opacity-50', 'pointer-events-none');
+            }
+        }
+
+        async function handleUpload(file, type) {
+            // SEGURANÇA: Verificação de tipo de arquivo no cliente
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('Segurança: Apenas imagens (JPG, PNG, WEBP) e PDFs são permitidos. Arquivos HTML ou scripts são bloqueados.');
+                return;
+            }
+
+            const overlay = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            overlay.classList.add('active');
+            loadingText.innerText = "Preparando envio...";
+
+            try {
+                const { data: { user } } = await _supabase.auth.getUser();
+                if (!user) throw new Error("Sessão inválida");
+
+                const fileExt = file.name.split('.').pop().toLowerCase();
+                const fileName = `${type}_${academyId}_${Date.now()}.${fileExt}`;
+                const path = `${user.id}/${fileName}`;
+
+                const { error: uploadError } = await _supabase.storage
+                    .from('academy-certs')
+                    .upload(path, file, { upsert: true });
+
+                if (uploadError) throw uploadError;
+
+                const { data: { publicUrl } } = _supabase.storage.from('academy-certs').getPublicUrl(path);
+                const dbField = type === 'cert' ? 'certificate_url' : 'identity_url';
+
+                await _supabase.from('academies').update({ [dbField]: publicUrl }).eq('id', academyId);
+                markAsDone(type);
+            } catch (err) {
+                alert('Erro: ' + (err.message || 'Falha na conexão'));
+            } finally {
+                overlay.classList.remove('active');
+            }
+        }
+
+        document.getElementById('input-cert').onchange = (e) => e.target.files[0] && handleUpload(e.target.files[0], 'cert');
+        document.getElementById('input-ident').onchange = (e) => e.target.files[0] && handleUpload(e.target.files[0], 'ident');
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/upload-docs",
+      "destination": "/upload-docs.html"
+    },
+    {
+      "source": "/upload-docs.html",
+      "destination": "/upload-docs.html"
+    },
+    {
+      "source": "/upload-student-docs",
+      "destination": "/upload-student-docs.html"
+    },
+    {
+      "source": "/upload-student-docs.html",
+      "destination": "/upload-student-docs.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
