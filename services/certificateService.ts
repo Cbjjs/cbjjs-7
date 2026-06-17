@@ -18,6 +18,32 @@ export const certificateService = {
     },
 
     async requestCertificate(academyId: string, userId: string, amount: number) {
+        // Busca se já existe um pedido pendente para esta academia e este usuário
+        const { data: existingCert } = await supabase
+            .from('academy_certificates')
+            .select('id')
+            .eq('academy_id', academyId)
+            .eq('owner_id', userId)
+            .eq('status_payment', 'PENDING')
+            .maybeSingle();
+
+        if (existingCert) {
+            // Se existir, atualiza o valor e a data (upsert manual via update)
+            const { data, error } = await supabase
+                .from('academy_certificates')
+                .update({
+                    amount: amount,
+                    created_at: new Date().toISOString()
+                })
+                .eq('id', existingCert.id)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        }
+
+        // Se não existir, cria um novo
         const { data, error } = await supabase
             .from('academy_certificates')
             .insert({
