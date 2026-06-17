@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { 
-    RefreshCw, 
-    Search, 
-    CheckCircle, 
-    Clock, 
-    Package, 
-    Truck, 
-    Building, 
-    User, 
-    Calendar, 
+import {
+    RefreshCw,
+    Search,
+    CheckCircle,
+    Clock,
+    Package,
+    Truck,
+    Building,
+    User,
+    Calendar,
     DollarSign,
-    Loader2
+    Loader2,
+    X
 } from 'lucide-react';
 import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { certificateService } from '../services/certificateService';
