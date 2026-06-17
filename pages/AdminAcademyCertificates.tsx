@@ -23,7 +23,6 @@ import { useToast } from '../context/ToastContext';
 export const AdminAcademyCertificates: React.FC = () => {
     const { addToast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedMonth, setSelectedMonth] = useState<string>('ALL');
     const [activeTab, setActiveTab] = useState<'NEW' | 'DELIVERED' | 'CANCELLED'>('NEW');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
 
@@ -50,12 +49,6 @@ export const AdminAcademyCertificates: React.FC = () => {
             cert.academy?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             cert.owner?.fullName?.toLowerCase().includes(searchTerm.toLowerCase());
         
-        const certDate = new Date(cert.createdAt);
-        const certMonthYear = `${certDate.getFullYear()}-${String(certDate.getMonth() + 1).padStart(2, '0')}`;
-        const matchesMonth = selectedMonth === 'ALL' || certMonthYear === selectedMonth;
-
-        if (!matchesMonth) return false;
-
         if (activeTab === 'NEW') {
             return matchesSearch &&
                    cert.statusDelivery !== CertificateDeliveryStatus.DELIVERED &&
@@ -127,48 +120,10 @@ export const AdminAcademyCertificates: React.FC = () => {
                     <h2 className="text-3xl font-black dark:text-white tracking-tight">Certificados Academias</h2>
                     <p className="text-sm text-gray-500 font-medium">Gestão de pedidos e entregas de certificados.</p>
                 </div>
-                <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-                    <div className="flex gap-2 flex-1">
-                        <div className="relative flex-1 md:w-48">
-                            <select
-                                value={selectedMonth === 'ALL' ? 'ALL' : 'PICK'}
-                                onChange={(e) => {
-                                    if (e.target.value === 'ALL') setSelectedMonth('ALL');
-                                }}
-                                className="w-full pl-4 pr-10 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-black uppercase tracking-widest outline-none focus:ring-2 focus:ring-cbjjs-blue appearance-none dark:text-white shadow-sm"
-                            >
-                                <option value="ALL">Todos os Meses</option>
-                                <option value="PICK" disabled={selectedMonth === 'ALL'}>Filtrar por Mês...</option>
-                            </select>
-                            <Calendar className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
-                        </div>
-                        
-                        {selectedMonth !== 'ALL' && (
-                            <button
-                                onClick={() => setSelectedMonth('ALL')}
-                                className="p-3 bg-red-50 text-red-600 rounded-2xl border border-red-100 hover:bg-red-100 transition-all"
-                                title="Limpar filtro de data"
-                            >
-                                <X size={18} />
-                            </button>
-                        )}
-                        
-                        <div className="relative w-12 md:w-14">
-                            <input
-                                type="month"
-                                value={selectedMonth === 'ALL' ? '' : selectedMonth}
-                                onChange={(e) => setSelectedMonth(e.target.value || 'ALL')}
-                                className="absolute inset-0 opacity-0 cursor-pointer w-full"
-                            />
-                            <div className="w-full h-full flex items-center justify-center bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-cbjjs-blue shadow-sm">
-                                <Calendar size={20} />
-                            </div>
-                        </div>
-                    </div>
-
+                <div className="flex gap-3 w-full md:w-auto">
                     <div className="relative flex-1 md:w-64">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <input
+                        <input 
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Buscar professor ou academia..."
