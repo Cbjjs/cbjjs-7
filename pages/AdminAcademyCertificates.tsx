@@ -141,10 +141,7 @@ export const AdminAcademyCertificates: React.FC = () => {
                             className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-cbjjs-blue transition-all dark:text-white"
                         />
                     </div>
-                    <div
-                        className="relative flex-1 md:w-52 cursor-pointer"
-                        onClick={() => (dateInputRef.current as any)?.showPicker?.()}
-                    >
+                    <div className="relative flex-1 md:w-52">
                         <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                         <input
                             ref={dateInputRef}
