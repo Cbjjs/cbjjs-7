@@ -40,6 +40,10 @@ export const AdminAcademyCertificates: React.FC = () => {
 
     const certificates = certsData?.data || [];
 
+    const paidCertificates = certificates.filter(c => c.statusPayment === CertificatePaymentStatus.PAID);
+    const totalPaidCount = paidCertificates.length;
+    const totalSalesAmount = paidCertificates.reduce((sum, c) => sum + (c.amount || 0), 0);
+
     const filteredCertificates = certificates.filter(cert => {
         const matchesSearch =
             cert.academy?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -129,6 +133,27 @@ export const AdminAcademyCertificates: React.FC = () => {
                     <button onClick={() => refetch()} className="p-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl hover:bg-gray-50 transition-all text-cbjjs-blue shadow-sm">
                         <RefreshCw size={22} className={isLoading ? 'animate-spin' : ''} />
                     </button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-50 dark:bg-green-900/20 rounded-2xl flex items-center justify-center text-green-600">
+                        <CheckCircle size={24} />
+                    </div>
+                    <div>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Pedidos Pagos</span>
+                        <p className="text-2xl font-black dark:text-white">{totalPaidCount}</p>
+                    </div>
+                </div>
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm flex items-center gap-4">
+                    <div className="w-12 h-12 bg-cbjjs-blue/5 rounded-2xl flex items-center justify-center text-cbjjs-blue">
+                        <DollarSign size={24} />
+                    </div>
+                    <div>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Total em Vendas</span>
+                        <p className="text-2xl font-black dark:text-white">{formatCurrency(totalSalesAmount)}</p>
+                    </div>
                 </div>
             </div>
 
