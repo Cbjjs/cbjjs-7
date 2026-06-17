@@ -57,10 +57,6 @@ export const AdminAcademyCertificates: React.FC = () => {
     });
 
     const handleUpdateStatus = async (id: string, status: CertificateDeliveryStatus) => {
-        if (status === CertificateDeliveryStatus.CANCELLED && !window.confirm('Deseja realmente cancelar este pedido?')) {
-            return;
-        }
-
         setUpdatingId(id);
         try {
             await certificateService.updateDeliveryStatus(id, status);
