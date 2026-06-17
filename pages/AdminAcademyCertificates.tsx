@@ -22,7 +22,7 @@ import { useToast } from '../context/ToastContext';
 export const AdminAcademyCertificates: React.FC = () => {
     const { addToast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
-    const [activeTab, setActiveTab] = useState<'NEW' | 'DELIVERED'>('NEW');
+    const [activeTab, setActiveTab] = useState<'NEW' | 'DELIVERED' | 'CANCELLED'>('NEW');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
 
     const { data: certsData, isLoading, refetch } = useSupabaseQuery<AcademyCertificate[]>(
@@ -40,18 +40,26 @@ export const AdminAcademyCertificates: React.FC = () => {
     const certificates = certsData?.data || [];
 
     const filteredCertificates = certificates.filter(cert => {
-        const matchesSearch = 
-            cert.academy?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            cert.owner?.fullName.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch =
+            cert.academy?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            cert.owner?.fullName?.toLowerCase().includes(searchTerm.toLowerCase());
         
         if (activeTab === 'NEW') {
-            return matchesSearch && cert.statusDelivery !== CertificateDeliveryStatus.DELIVERED;
-        } else {
+            return matchesSearch &&
+                   cert.statusDelivery !== CertificateDeliveryStatus.DELIVERED &&
+                   cert.statusDelivery !== CertificateDeliveryStatus.CANCELLED;
+        } else if (activeTab === 'DELIVERED') {
             return matchesSearch && cert.statusDelivery === CertificateDeliveryStatus.DELIVERED;
+        } else {
+            return matchesSearch && cert.statusDelivery === CertificateDeliveryStatus.CANCELLED;
         }
     });
 
     const handleUpdateStatus = async (id: string, status: CertificateDeliveryStatus) => {
+        if (status === CertificateDeliveryStatus.CANCELLED && !window.confirm('Deseja realmente cancelar este pedido?')) {
+            return;
+        }
+
         setUpdatingId(id);
         try {
             await certificateService.updateDeliveryStatus(id, status);
@@ -72,6 +80,8 @@ export const AdminAcademyCertificates: React.FC = () => {
             paymentBadge = 'bg-green-100 text-green-700 border-green-200';
         } else if (paymentStatus === CertificatePaymentStatus.PENDING) {
             paymentBadge = 'bg-amber-100 text-amber-700 border-amber-200';
+        } else if (paymentStatus === CertificatePaymentStatus.CANCELLED) {
+            paymentBadge = 'bg-red-50 text-red-600 border-red-100';
         } else {
             paymentBadge = 'bg-red-100 text-red-700 border-red-200';
         }
@@ -80,6 +90,8 @@ export const AdminAcademyCertificates: React.FC = () => {
             deliveryBadge = 'bg-blue-100 text-blue-700 border-blue-200';
         } else if (deliveryStatus === CertificateDeliveryStatus.PRODUCING) {
             deliveryBadge = 'bg-indigo-100 text-indigo-700 border-indigo-200';
+        } else if (deliveryStatus === CertificateDeliveryStatus.CANCELLED) {
+            deliveryBadge = 'bg-red-100 text-red-700 border-red-200';
         } else {
             deliveryBadge = 'bg-gray-100 text-gray-700 border-gray-200';
         }
@@ -95,6 +107,7 @@ export const AdminAcademyCertificates: React.FC = () => {
             case 'WAITING_PAYMENT': return 'Aguardando Pagamento';
             case 'PRODUCING': return 'Produzindo';
             case 'DELIVERED': return 'Entregue';
+            case 'CANCELLED': return 'Cancelado';
             default: return status;
         }
     };
@@ -129,11 +142,17 @@ export const AdminAcademyCertificates: React.FC = () => {
                 >
                     Novos Pedidos
                 </button>
-                <button 
+                <button
                     onClick={() => setActiveTab('DELIVERED')}
                     className={`px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeTab === 'DELIVERED' ? 'bg-white dark:bg-slate-800 text-cbjjs-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     Entregues
+                </button>
+                <button
+                    onClick={() => setActiveTab('CANCELLED')}
+                    className={`px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${activeTab === 'CANCELLED' ? 'bg-white dark:bg-slate-800 text-cbjjs-blue shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                    Cancelados
                 </button>
             </div>
 
@@ -196,16 +215,30 @@ export const AdminAcademyCertificates: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center shrink-0">
-                                            {cert.statusDelivery !== CertificateDeliveryStatus.DELIVERED && (
-                                                <button
-                                                    onClick={() => handleUpdateStatus(cert.id, CertificateDeliveryStatus.DELIVERED)}
-                                                    disabled={updatingId === cert.id}
-                                                    className="w-full md:w-auto px-6 py-3.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 hover:bg-cbjjs-blue"
-                                                >
-                                                    {updatingId === cert.id ? <Loader2 className="animate-spin" size={14}/> : <Truck size={16}/>}
-                                                    Marcar como Entregue
-                                                </button>
+                                        <div className="flex flex-col md:flex-row items-center shrink-0 gap-3">
+                                            {cert.statusDelivery !== CertificateDeliveryStatus.DELIVERED &&
+                                             cert.statusDelivery !== CertificateDeliveryStatus.CANCELLED && (
+                                                <>
+                                                    {cert.statusDelivery === CertificateDeliveryStatus.WAITING_PAYMENT && (
+                                                        <button
+                                                            onClick={() => handleUpdateStatus(cert.id, CertificateDeliveryStatus.CANCELLED)}
+                                                            disabled={updatingId === cert.id}
+                                                            className="w-full md:w-auto px-6 py-3.5 bg-red-50 text-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2 hover:bg-red-100"
+                                                        >
+                                                            {updatingId === cert.id ? <Loader2 className="animate-spin" size={14}/> : <X size={16}/>}
+                                                            Cancelar Pedido
+                                                        </button>
+                                                    )}
+                                                    
+                                                    <button
+                                                        onClick={() => handleUpdateStatus(cert.id, CertificateDeliveryStatus.DELIVERED)}
+                                                        disabled={updatingId === cert.id}
+                                                        className="w-full md:w-auto px-6 py-3.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 hover:bg-cbjjs-blue"
+                                                    >
+                                                        {updatingId === cert.id ? <Loader2 className="animate-spin" size={14}/> : <Truck size={16}/>}
+                                                        Marcar como Entregue
+                                                    </button>
+                                                </>
                                             )}
                                         </div>
                                     </div>

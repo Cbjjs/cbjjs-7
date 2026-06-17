@@ -123,9 +123,16 @@ export const certificateService = {
     },
 
     async updateDeliveryStatus(certificateId: string, status: CertificateDeliveryStatus) {
+        const updateData: any = { status_delivery: status };
+        
+        // Se cancelar a entrega, também marcamos o pagamento como cancelado se estiver pendente
+        if (status === CertificateDeliveryStatus.CANCELLED) {
+            updateData.status_payment = 'CANCELLED';
+        }
+
         const { error } = await supabase
             .from('academy_certificates')
-            .update({ status_delivery: status })
+            .update(updateData)
             .eq('id', certificateId);
 
         if (error) throw error;

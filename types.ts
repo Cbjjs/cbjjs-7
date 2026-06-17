@@ -34,13 +34,15 @@ export enum RegistrationStatus {
 export enum CertificatePaymentStatus {
   PENDING = 'PENDING',
   PAID = 'PAID',
-  OVERDUE = 'OVERDUE'
+  OVERDUE = 'OVERDUE',
+  CANCELLED = 'CANCELLED'
 }
 
 export enum CertificateDeliveryStatus {
   WAITING_PAYMENT = 'WAITING_PAYMENT',
   PRODUCING = 'PRODUCING',
-  DELIVERED = 'DELIVERED'
+  DELIVERED = 'DELIVERED',
+  CANCELLED = 'CANCELLED'
 }
 
 export enum DocumentStatus {
