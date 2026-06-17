@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     RefreshCw,
     Search,
@@ -25,6 +25,7 @@ export const AdminAcademyCertificates: React.FC = () => {
     const { addToast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedDate, setSelectedDate] = useState('');
+    const dateInputRef = useRef<HTMLInputElement>(null);
     const [activeTab, setActiveTab] = useState<'NEW' | 'DELIVERED' | 'CANCELLED'>('NEW');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
 
@@ -140,18 +141,22 @@ export const AdminAcademyCertificates: React.FC = () => {
                             className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-cbjjs-blue transition-all dark:text-white"
                         />
                     </div>
-                    <div className="relative flex-1 md:w-52">
+                    <div
+                        className="relative flex-1 md:w-52 cursor-pointer"
+                        onClick={() => (dateInputRef.current as any)?.showPicker?.()}
+                    >
                         <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
                         <input
+                            ref={dateInputRef}
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
-                            className="w-full pl-12 pr-12 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-cbjjs-blue transition-all dark:text-white cursor-pointer"
+                            className="w-full pl-12 pr-12 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-cbjjs-blue transition-all dark:text-white cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
                             {selectedDate && (
                                 <button
-                                    onClick={(e) => { e.preventDefault(); setSelectedDate(''); }}
+                                    onClick={(e) => { e.stopPropagation(); setSelectedDate(''); }}
                                     className="p-1 hover:text-red-500 transition-colors pointer-events-auto"
                                 >
                                     <X size={14} className="text-gray-400" />
