@@ -148,6 +148,7 @@ export const AdminAcademyCertificates: React.FC = () => {
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
+                            onKeyDown={(e) => e.preventDefault()}
                             className="w-full pl-12 pr-12 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-cbjjs-blue transition-all dark:text-white cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
                         />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
