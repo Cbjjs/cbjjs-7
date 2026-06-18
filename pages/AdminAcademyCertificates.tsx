@@ -141,26 +141,33 @@ export const AdminAcademyCertificates: React.FC = () => {
                             className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-cbjjs-blue transition-all dark:text-white"
                         />
                     </div>
-                    <div className="relative flex-1 md:w-52">
-                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                    <div className="relative shrink-0">
+                        {/* Input nativo invisível que cobre toda a área para disparar o seletor */}
                         <input
                             ref={dateInputRef}
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
-                            onKeyDown={(e) => e.preventDefault()}
-                            className="w-full pl-12 pr-12 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-cbjjs-blue transition-all dark:text-white cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
+                            className="absolute inset-0 opacity-0 cursor-pointer z-10 w-full h-full [color-scheme:light] dark:[color-scheme:dark]"
                         />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
-                            {selectedDate && (
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setSelectedDate(''); }}
-                                    className="p-1 hover:text-red-500 transition-colors pointer-events-auto"
-                                >
-                                    <X size={14} className="text-gray-400" />
-                                </button>
-                            )}
-                            <ChevronDown size={14} className="text-gray-400" />
+                        {/* Gatilho Visual Premium (Estilo UI/UX Action) */}
+                        <div className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-sm transition-all hover:border-cbjjs-blue hover:shadow-md group">
+                            <div className="relative">
+                                <Calendar className={`${selectedDate ? 'text-cbjjs-blue' : 'text-gray-400'} transition-colors`} size={20} />
+                                {selectedDate && <div className="absolute -top-1 -right-1 w-2 h-2 bg-cbjjs-blue rounded-full border-2 border-white dark:border-slate-800"></div>}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {selectedDate && (
+                                    <button
+                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedDate(''); }}
+                                        className="relative z-20 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-500 transition-all active:scale-90"
+                                        title="Limpar data"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                )}
+                                <ChevronDown className="text-gray-400 group-hover:text-cbjjs-blue transition-colors" size={16} />
+                            </div>
                         </div>
                     </div>
                     <button onClick={() => refetch()} className="p-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl hover:bg-gray-50 transition-all text-cbjjs-blue shadow-sm shrink-0 flex items-center justify-center">
