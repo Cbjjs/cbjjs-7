@@ -142,16 +142,19 @@ export const AdminAcademyCertificates: React.FC = () => {
                         />
                     </div>
                     <div className="relative shrink-0">
-                        {/* Input nativo invisível que cobre toda a área para disparar o seletor */}
+                        {/* Input nativo invisível */}
                         <input
                             ref={dateInputRef}
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
-                            className="absolute inset-0 opacity-0 cursor-pointer z-10 w-full h-full [color-scheme:light] dark:[color-scheme:dark]"
+                            className="absolute inset-0 opacity-0 w-full h-full z-0 pointer-events-none"
                         />
-                        {/* Gatilho Visual Premium (Estilo UI/UX Action) */}
-                        <div className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-sm transition-all hover:border-cbjjs-blue hover:shadow-md group">
+                        {/* Gatilho Visual que força a abertura do seletor */}
+                        <div
+                            onClick={() => (dateInputRef.current as any)?.showPicker?.()}
+                            className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-sm transition-all hover:border-cbjjs-blue hover:shadow-md group cursor-pointer"
+                        >
                             <div className="relative">
                                 <Calendar className={`${selectedDate ? 'text-cbjjs-blue' : 'text-gray-400'} transition-colors`} size={20} />
                                 {selectedDate && <div className="absolute -top-1 -right-1 w-2 h-2 bg-cbjjs-blue rounded-full border-2 border-white dark:border-slate-800"></div>}
