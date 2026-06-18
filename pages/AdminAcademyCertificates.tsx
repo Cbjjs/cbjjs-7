@@ -141,20 +141,17 @@ export const AdminAcademyCertificates: React.FC = () => {
                             className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-cbjjs-blue transition-all dark:text-white"
                         />
                     </div>
-                    <div className="relative shrink-0">
-                        {/* Input nativo invisível */}
+                    <div className="relative shrink-0 group">
+                        {/* Input nativo invisível que fica por CIMA de tudo para receber o clique real */}
                         <input
                             ref={dateInputRef}
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
-                            className="absolute inset-0 opacity-0 w-full h-full z-0 pointer-events-none"
+                            className="absolute inset-0 opacity-0 w-full h-full z-20 cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
                         />
-                        {/* Gatilho Visual que força a abertura do seletor */}
-                        <div
-                            onClick={() => (dateInputRef.current as any)?.showPicker?.()}
-                            className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-sm transition-all hover:border-cbjjs-blue hover:shadow-md group cursor-pointer"
-                        >
+                        {/* Gatilho Visual Premium */}
+                        <div className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-sm transition-all group-hover:border-cbjjs-blue group-hover:shadow-md">
                             <div className="relative">
                                 <Calendar className={`${selectedDate ? 'text-cbjjs-blue' : 'text-gray-400'} transition-colors`} size={20} />
                                 {selectedDate && <div className="absolute -top-1 -right-1 w-2 h-2 bg-cbjjs-blue rounded-full border-2 border-white dark:border-slate-800"></div>}
@@ -163,7 +160,7 @@ export const AdminAcademyCertificates: React.FC = () => {
                                 {selectedDate && (
                                     <button
                                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedDate(''); }}
-                                        className="relative z-20 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-500 transition-all active:scale-90"
+                                        className="relative z-30 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-500 transition-all active:scale-90"
                                         title="Limpar data"
                                     >
                                         <X size={14} />
