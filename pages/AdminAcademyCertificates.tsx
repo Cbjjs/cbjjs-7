@@ -141,19 +141,30 @@ export const AdminAcademyCertificates: React.FC = () => {
                             className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-cbjjs-blue transition-all dark:text-white"
                         />
                     </div>
-                    <div className="relative shrink-0 group">
-                        {/* Input nativo invisível que fica por CIMA de tudo para receber o clique real */}
+                    <div className="relative shrink-0">
+                        {/* Estilo para garantir que o clique no input acione o calendário nativo em iframes */}
+                        <style>{`
+                            .date-input-overlay::-webkit-calendar-picker-indicator {
+                                position: absolute;
+                                left: 0; top: 0; width: 100%; height: 100%;
+                                margin: 0; padding: 0;
+                                cursor: pointer;
+                                opacity: 0;
+                            }
+                        `}</style>
+                        
+                        {/* Input que recebe o clique real (sobrepondo tudo) */}
                         <input
-                            ref={dateInputRef}
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
-                            className="absolute inset-0 opacity-0 w-full h-full z-20 cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
+                            className="date-input-overlay absolute inset-0 opacity-0 w-full h-full z-20 cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
                         />
-                        {/* Gatilho Visual Premium */}
-                        <div className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-sm transition-all group-hover:border-cbjjs-blue group-hover:shadow-md">
+
+                        {/* Visual Pill Button (z-10) */}
+                        <div className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-sm transition-all group-hover:border-cbjjs-blue">
                             <div className="relative">
-                                <Calendar className={`${selectedDate ? 'text-cbjjs-blue' : 'text-gray-400'} transition-colors`} size={20} />
+                                <Calendar className={`${selectedDate ? 'text-cbjjs-blue' : 'text-gray-400'}`} size={20} />
                                 {selectedDate && <div className="absolute -top-1 -right-1 w-2 h-2 bg-cbjjs-blue rounded-full border-2 border-white dark:border-slate-800"></div>}
                             </div>
                             <div className="flex items-center gap-2">
@@ -161,12 +172,11 @@ export const AdminAcademyCertificates: React.FC = () => {
                                     <button
                                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedDate(''); }}
                                         className="relative z-30 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-500 transition-all active:scale-90"
-                                        title="Limpar data"
                                     >
                                         <X size={14} />
                                     </button>
                                 )}
-                                <ChevronDown className="text-gray-400 group-hover:text-cbjjs-blue transition-colors" size={16} />
+                                <ChevronDown className="text-gray-400" size={16} />
                             </div>
                         </div>
                     </div>
