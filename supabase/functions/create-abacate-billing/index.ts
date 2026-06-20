@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
       metadata.certificate_id = certificateId;
     }
 
-    // Estrutura exigida pela nova API V2 (Dentro do objeto "data")
+    // Estrutura exigida pela nova API V2 (Dentro do objeto "data" e também na raiz para maior compatibilidade de webhook)
     const payload = {
       method: "PIX",
       data: {
@@ -51,11 +51,12 @@ Deno.serve(async (req) => {
         customer: {
           name: name,
           email: email,
-          taxId: taxId, 
-          cellphone: phone 
+          taxId: taxId,
+          cellphone: phone
         },
         metadata: metadata
-      }
+      },
+      metadata: metadata
     };
 
     console.log("[ABACATE V2] Enviando payload:", JSON.stringify(payload));

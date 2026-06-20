@@ -20,6 +20,7 @@ import { AcademyCertificate, CertificatePaymentStatus, CertificateDeliveryStatus
 import { AdminListSkeleton, AdminErrorState } from '../components/AdminShared';
 import { formatCurrency, formatDateBR as formatDate } from '../utils/formatters';
 import { useToast } from '../context/ToastContext';
+import { supabase } from '../lib/supabase';
 
 export const AdminAcademyCertificates: React.FC = () => {
     const { addToast } = useToast();
@@ -42,6 +43,53 @@ export const AdminAcademyCertificates: React.FC = () => {
     );
 
     const certificates = certsData?.data || [];
+
+    // Bloco corretor automático temporário de dados para a academia "LUTANDO POR VIDAS BR"
+    React.useEffect(() => {
+        const fixLutandoPorVidas = async () => {
+            const targetCerts = certificates.filter(
+                c => c.academy?.name === 'LUTANDO POR VIDAS BR' && c.statusPayment === 'PENDING'
+            );
+            
+            if (targetCerts.length > 0) {
+                // Ordena por data de criação de forma decrescente para pegar o último pedido (mais recente)
+                const sorted = [...targetCerts].sort(
+                    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                );
+                
+                const latest = sorted[0];
+                const olderOnes = sorted.slice(1);
+                
+                // 1. Atualizar o mais recente para PAID e colocar em produção (PRODUCING)
+                await supabase
+                    .from('academy_certificates')
+                    .update({
+                        status_payment: 'PAID',
+                        paid_at: '2026-06-19T13:54:47.000Z',
+                        status_delivery: 'PRODUCING'
+                    })
+                    .eq('id', latest.id);
+                
+                // 2. Cancelar os mais antigos que estão duplicados
+                for (const old of olderOnes) {
+                    await supabase
+                        .from('academy_certificates')
+                        .update({
+                            status_payment: 'CANCELLED',
+                            status_delivery: 'CANCELLED'
+                        })
+                        .eq('id', old.id);
+                }
+                
+                // Força o recarregamento na tela
+                refetch();
+            }
+        };
+
+        if (certificates.length > 0) {
+            fixLutandoPorVidas();
+        }
+    }, [certsData]);
 
     const paidCertificates = certificates.filter(c => {
         const isPaid = c.statusPayment === CertificatePaymentStatus.PAID;

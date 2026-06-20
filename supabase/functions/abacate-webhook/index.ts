@@ -13,10 +13,14 @@ Deno.serve(async (req) => {
     const payload = await req.json();
     const status = payload.data?.status;
     const customerEmail = payload.data?.customer?.email;
-    const planFromMetadata = payload.data?.metadata?.plan_type;
-    const dependentId = payload.data?.metadata?.dependent_id;
-    const certificateId = payload.data?.metadata?.certificate_id;
-    const userId = payload.data?.metadata?.user_id;
+    
+    // Resiliência de metadados: tenta obter da raiz e também do objeto "data"
+    const metadata = payload.metadata || payload.data?.metadata || {};
+    const planFromMetadata = metadata.plan_type;
+    const dependentId = metadata.dependent_id;
+    const certificateId = metadata.certificate_id;
+    const userId = metadata.user_id;
+    
     const amount = payload.data?.amount;
 
     if (status === 'PAID') {
