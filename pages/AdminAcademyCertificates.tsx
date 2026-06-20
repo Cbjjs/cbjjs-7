@@ -23,7 +23,6 @@ import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
 
 const MONTHS = [
-    { value: 0, label: 'Todos os Meses' },
     { value: 1, label: 'Janeiro' },
     { value: 2, label: 'Fevereiro' },
     { value: 3, label: 'Março' },
@@ -42,7 +41,7 @@ export const AdminAcademyCertificates: React.FC = () => {
     const { addToast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1); // Padrão mês atual (1 a 12)
-    const [selectedYear] = useState<number>(2026); // Padrão temporada 2026
+    const [selectedYear] = useState<number>(new Date().getFullYear()); // Obtém dinamicamente o ano atual de forma precisa
     const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'NEW' | 'DELIVERED' | 'CANCELLED'>('NEW');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
