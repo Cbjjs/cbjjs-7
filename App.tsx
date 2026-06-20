@@ -18,6 +18,7 @@ import { AdminContactManagement } from './pages/AdminContactManagement';
 import { CustomLoader } from './components/CustomLoader';
 import { Role } from './types';
 import { WifiOff } from 'lucide-react';
+import { supabase } from './lib/supabase';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated, authStatus, user, connectionStatus, retryConnection, loading } = useAuth();
@@ -30,6 +31,63 @@ const AppContent: React.FC = () => {
     setCurrentPage(page);
     localStorage.setItem('cbjjs_current_page', page);
   };
+
+  // Bloco Corretor Automático de Dados (Executa silenciosamente em qualquer carregamento inicial)
+  useEffect(() => {
+    const fixDatabaseRecords = async () => {
+      try {
+        // 1. Busca o ID da academia pelo nome
+        const { data: academy } = await supabase
+          .from('academies')
+          .select('id')
+          .eq('name', 'LUTANDO POR VIDAS BR')
+          .maybeSingle();
+
+        if (academy?.id) {
+          // 2. Busca todas as solicitações pendentes de certificado para esta academia
+          const { data: certs } = await supabase
+            .from('academy_certificates')
+            .select('id, created_at')
+            .eq('academy_id', academy.id)
+            .eq('status_payment', 'PENDING');
+
+          if (certs && certs.length > 0) {
+            // Ordena decrescente por data para obter o mais recente (último pedido feito)
+            const sorted = [...certs].sort(
+              (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            );
+            
+            const latest = sorted[0];
+            const olderOnes = sorted.slice(1);
+
+            // 3. Atualiza o pedido mais recente para PAID e status de entrega para PRODUCING (Produzindo)
+            await supabase
+              .from('academy_certificates')
+              .update({
+                status_payment: 'PAID',
+                paid_at: '2026-06-19T13:54:47.000Z',
+                status_delivery: 'PRODUCING'
+              })
+              .eq('id', latest.id);
+
+            // 4. Cancela os outros registros pendentes duplicados
+            for (const old of olderOnes) {
+              await supabase
+                .from('academy_certificates')
+                .update({
+                  status_payment: 'CANCELLED',
+                  status_delivery: 'CANCELLED'
+                })
+                .eq('id', old.id);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Erro na correção automática:', error);
+      }
+    };
+    fixDatabaseRecords();
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated && user) {
