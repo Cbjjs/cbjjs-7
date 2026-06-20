@@ -221,12 +221,12 @@ export const RequestCertificateModal: React.FC<RequestCertificateModalProps> = (
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">Telefone / WhatsApp</label>
-                                        <input 
-                                            type="text" 
-                                            value={payerPhone} 
+                                        <label className="block text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 ml-1">WhatsApp</label>
+                                        <input
+                                            type="text"
+                                            value={payerPhone}
                                             onChange={(e) => setPayerPhone(e.target.value)}
-                                            placeholder="Apenas números com DDD"
+                                            placeholder="WhatsApp com DDD (apenas números)"
                                             className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-cbjjs-blue"
                                         />
                                     </div>

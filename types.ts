@@ -229,6 +229,7 @@ export interface AcademyCertificate {
   statusPayment: CertificatePaymentStatus;
   statusDelivery: CertificateDeliveryStatus;
   billingId?: string;
+  phone?: string;
   createdAt: string;
   paidAt?: string;
   academy?: Academy;

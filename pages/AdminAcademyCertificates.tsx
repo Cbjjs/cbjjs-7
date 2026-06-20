@@ -12,7 +12,8 @@ import {
     DollarSign,
     Loader2,
     X,
-    ChevronDown
+    ChevronDown,
+    MessageSquare
 } from 'lucide-react';
 import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { certificateService } from '../services/certificateService';
@@ -21,6 +22,7 @@ import { AdminListSkeleton, AdminErrorState } from '../components/AdminShared';
 import { formatCurrency, formatDateBR as formatDate } from '../utils/formatters';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
+import { AdminAcademyDetailsModal } from '../components/AdminAcademyDetailsModal';
 
 const MONTHS = [
     { value: 1, label: 'Janeiro' },
@@ -45,14 +47,15 @@ export const AdminAcademyCertificates: React.FC = () => {
     const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'NEW' | 'DELIVERED' | 'CANCELLED'>('NEW');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [viewingAcademy, setViewingAcademy] = useState<any>(null);
 
     const { data: certsData, isLoading, refetch } = useSupabaseQuery<AcademyCertificate[]>(
         ['admin-certificates', selectedMonth, selectedYear],
         async () => {
             try {
                 const data = await certificateService.getAllCertificates(
-                    selectedMonth === 0 ? undefined : selectedMonth,
-                    selectedMonth === 0 ? undefined : selectedYear
+                    selectedMonth,
+                    selectedYear
                 );
                 return { data, error: null };
             } catch (error) {
@@ -307,7 +310,12 @@ export const AdminAcademyCertificates: React.FC = () => {
                                                     <Building size={24} />
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-xl font-black dark:text-white uppercase leading-none mb-1">{cert.academy?.name}</h3>
+                                                    <h3
+                                                        onClick={() => cert.academy && setViewingAcademy(cert.academy)}
+                                                        className="text-xl font-black dark:text-white uppercase leading-none mb-1 cursor-pointer hover:text-cbjjs-blue transition-colors"
+                                                    >
+                                                        {cert.academy?.name}
+                                                    </h3>
                                                     <div className="flex items-center gap-2 text-gray-500 text-xs font-bold uppercase tracking-wider">
                                                         <User size={14} className="text-cbjjs-blue" />
                                                         {cert.owner?.fullName}
@@ -315,7 +323,7 @@ export const AdminAcademyCertificates: React.FC = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
+                                            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-2">
                                                 <div className="space-y-1">
                                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Data do Pedido</span>
                                                     <div className="flex items-center gap-2 text-sm font-bold dark:text-gray-300">
@@ -331,6 +339,13 @@ export const AdminAcademyCertificates: React.FC = () => {
                                                     </div>
                                                 </div>
                                                 <div className="space-y-1">
+                                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">WhatsApp</span>
+                                                    <div className="flex items-center gap-2 text-sm font-bold dark:text-gray-300">
+                                                        <MessageSquare size={14} className="text-cbjjs-blue" />
+                                                        <span className="truncate">{cert.phone || 'Não inf.'}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-1">
                                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Status Pag.</span>
                                                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase border ${paymentBadge}`}>
                                                         {getStatusLabel(cert.statusPayment)}
@@ -339,8 +354,8 @@ export const AdminAcademyCertificates: React.FC = () => {
                                                 <div className="space-y-1">
                                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Entrega</span>
                                                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase border ${deliveryBadge}`}>
-                                                        {cert.statusDelivery === CertificateDeliveryStatus.PRODUCING ? <Package size={12} className="mr-1.5 animate-pulse" /> : 
-                                                         cert.statusDelivery === CertificateDeliveryStatus.DELIVERED ? <CheckCircle size={12} className="mr-1.5" /> : 
+                                                        {cert.statusDelivery === CertificateDeliveryStatus.PRODUCING ? <Package size={12} className="mr-1.5 animate-pulse" /> :
+                                                         cert.statusDelivery === CertificateDeliveryStatus.DELIVERED ? <CheckCircle size={12} className="mr-1.5" /> :
                                                          <Clock size={12} className="mr-1.5" />}
                                                         {getStatusLabel(cert.statusDelivery)}
                                                     </span>
@@ -367,9 +382,9 @@ export const AdminAcademyCertificates: React.FC = () => {
                                                     <button
                                                         onClick={() => handleUpdateStatus(cert.id, CertificateDeliveryStatus.DELIVERED)}
                                                         disabled={updatingId === cert.id || !isPaid}
-                                                        className={`w-full md:w-auto px-6 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 
-                                                            ${isPaid 
-                                                                ? 'bg-slate-900 text-white hover:bg-cbjjs-blue cursor-pointer' 
+                                                        className={`w-full md:w-auto px-6 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2
+                                                            ${isPaid
+                                                                ? 'bg-slate-900 text-white hover:bg-cbjjs-blue cursor-pointer'
                                                                 : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed shadow-none opacity-50'
                                                             }
                                                         `}
@@ -387,6 +402,18 @@ export const AdminAcademyCertificates: React.FC = () => {
                     )}
                 </div>
             )}
+
+            <AdminAcademyDetailsModal
+                isOpen={!!viewingAcademy}
+                onClose={() => setViewingAcademy(null)}
+                academy={viewingAcademy}
+                onApproveAcademy={async () => {}}
+                onApproveUpdate={async () => {}}
+                onApproveDoc={async () => {}}
+                onRejectDoc={() => {}}
+                onDeleteAcademy={() => {}}
+                processingId={null}
+            />
         </div>
     );
 };

@@ -17,7 +17,7 @@ export const certificateService = {
         return parseFloat(data.value);
     },
 
-    async requestCertificate(academyId: string, userId: string, amount: number) {
+    async requestCertificate(academyId: string, userId: string, amount: number, phone?: string) {
         // Busca se já existe um pedido pendente para esta academia e este usuário
         const { data: existingCert } = await supabase
             .from('academy_certificates')
@@ -28,11 +28,12 @@ export const certificateService = {
             .maybeSingle();
 
         if (existingCert) {
-            // Se existir, atualiza o valor e a data (upsert manual via update)
+            // Se existir, atualiza o valor, a data e o telefone (upsert manual via update)
             const { data, error } = await supabase
                 .from('academy_certificates')
                 .update({
                     amount: amount,
+                    phone: phone,
                     created_at: new Date().toISOString()
                 })
                 .eq('id', existingCert.id)
@@ -50,6 +51,7 @@ export const certificateService = {
                 academy_id: academyId,
                 owner_id: userId,
                 amount: amount,
+                phone: phone,
                 status_payment: 'PENDING',
                 status_delivery: 'WAITING_PAYMENT'
             })
@@ -90,11 +92,21 @@ export const certificateService = {
         }));
     },
 
-    async getAllCertificates(): Promise<AcademyCertificate[]> {
-        const { data, error } = await supabase
+    async getAllCertificates(month?: number, year?: number): Promise<AcademyCertificate[]> {
+        let query = supabase
             .from('academy_certificates')
             .select('*, academy:academies(*), owner:profiles!owner_id(full_name)')
             .order('created_at', { ascending: false });
+
+        if (month !== undefined && year !== undefined) {
+            // Primeiro dia do mês alvo em UTC
+            const startDate = new Date(year, month - 1, 1).toISOString();
+            // Primeiro dia do mês seguinte em UTC
+            const endDate = new Date(year, month, 1).toISOString();
+            query = query.gte('created_at', startDate).lt('created_at', endDate);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
 
@@ -106,6 +118,7 @@ export const certificateService = {
             statusPayment: item.status_payment as CertificatePaymentStatus,
             statusDelivery: item.status_delivery as CertificateDeliveryStatus,
             billingId: item.billing_id,
+            phone: item.phone,
             createdAt: item.created_at,
             paidAt: item.paid_at,
             academy: item.academy ? {

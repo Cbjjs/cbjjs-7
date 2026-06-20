@@ -49,8 +49,8 @@ export const useAcademyCertificates = () => {
         if (!user) return null;
         setIsRequesting(true);
         try {
-            // 1. Criar a solicitação de certificado no banco local (PENDING)
-            const cert = await certificateService.requestCertificate(academy.id, user.id, price);
+            // 1. Criar a solicitação de certificado no banco local (PENDING) com o WhatsApp informado
+            const cert = await certificateService.requestCertificate(academy.id, user.id, price, customerData.phone);
             
             // 2. Chamar a Edge Function do Supabase para criar a cobrança no AbacatePay V2
             const { data, error } = await supabase.functions.invoke('create-abacate-billing', {
