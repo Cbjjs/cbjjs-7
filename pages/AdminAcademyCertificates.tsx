@@ -341,13 +341,18 @@ export const AdminAcademyCertificates: React.FC = () => {
                                                     >
                                                         {cert.academy?.name}
                                                     </h3>
-                                                    {cert.academy?.federationId && (
-                                                        <div className="mb-1.5">
+                                                    <div className="flex flex-wrap gap-1.5 mb-1.5 items-center">
+                                                        {cert.academy?.federationId && (
                                                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-cbjjs-blue/10 text-cbjjs-blue dark:bg-blue-950/40 dark:text-blue-300">
                                                                 Registro: {cert.academy.federationId}
                                                             </span>
-                                                        </div>
-                                                    )}
+                                                        )}
+                                                        {cert.academyId && (
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-gray-300 select-all cursor-pointer" title="Clique duas vezes ou selecione para copiar">
+                                                                ID Academia: {cert.academyId}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <div className="flex items-center gap-2 text-gray-500 text-xs font-bold uppercase tracking-wider">
                                                         <User size={14} className="text-cbjjs-blue" />
                                                         {cert.owner?.fullName}
