@@ -22,19 +22,39 @@ import { formatCurrency, formatDateBR as formatDate } from '../utils/formatters'
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
 
+const MONTHS = [
+    { value: 0, label: 'Todos os Meses' },
+    { value: 1, label: 'Janeiro' },
+    { value: 2, label: 'Fevereiro' },
+    { value: 3, label: 'Março' },
+    { value: 4, label: 'Abril' },
+    { value: 5, label: 'Maio' },
+    { value: 6, label: 'Junho' },
+    { value: 7, label: 'Julho' },
+    { value: 8, label: 'Agosto' },
+    { value: 9, label: 'Setembro' },
+    { value: 10, label: 'Outubro' },
+    { value: 11, label: 'Novembro' },
+    { value: 12, label: 'Dezembro' }
+];
+
 export const AdminAcademyCertificates: React.FC = () => {
     const { addToast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedDate, setSelectedDate] = useState('');
-    const dateInputRef = useRef<HTMLInputElement>(null);
+    const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1); // Padrão mês atual (1 a 12)
+    const [selectedYear] = useState<number>(2026); // Padrão temporada 2026
+    const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'NEW' | 'DELIVERED' | 'CANCELLED'>('NEW');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
 
     const { data: certsData, isLoading, refetch } = useSupabaseQuery<AcademyCertificate[]>(
-        ['admin-certificates'],
+        ['admin-certificates', selectedMonth, selectedYear],
         async () => {
             try {
-                const data = await certificateService.getAllCertificates();
+                const data = await certificateService.getAllCertificates(
+                    selectedMonth === 0 ? undefined : selectedMonth,
+                    selectedMonth === 0 ? undefined : selectedYear
+                );
                 return { data, error: null };
             } catch (error) {
                 return { data: [], error };
@@ -91,12 +111,7 @@ export const AdminAcademyCertificates: React.FC = () => {
         }
     }, [certsData]);
 
-    const paidCertificates = certificates.filter(c => {
-        const isPaid = c.statusPayment === CertificatePaymentStatus.PAID;
-        if (!selectedDate) return isPaid;
-        const d = new Date(c.createdAt);
-        return isPaid && d.toISOString().split('T')[0] === selectedDate;
-    });
+    const paidCertificates = certificates.filter(c => c.statusPayment === CertificatePaymentStatus.PAID);
     const totalPaidCount = paidCertificates.length;
     const totalSalesAmount = paidCertificates.reduce((sum, c) => sum + (c.amount || 0), 0);
 
@@ -104,18 +119,15 @@ export const AdminAcademyCertificates: React.FC = () => {
         const matchesSearch =
             cert.academy?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             cert.owner?.fullName?.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        const d = new Date(cert.createdAt);
-        const matchesDate = !selectedDate || d.toISOString().split('T')[0] === selectedDate;
 
         if (activeTab === 'NEW') {
-            return matchesSearch && matchesDate &&
+            return matchesSearch &&
                    cert.statusDelivery !== CertificateDeliveryStatus.DELIVERED &&
                    cert.statusDelivery !== CertificateDeliveryStatus.CANCELLED;
         } else if (activeTab === 'DELIVERED') {
-            return matchesSearch && matchesDate && cert.statusDelivery === CertificateDeliveryStatus.DELIVERED;
+            return matchesSearch && cert.statusDelivery === CertificateDeliveryStatus.DELIVERED;
         } else {
-            return matchesSearch && matchesDate && cert.statusDelivery === CertificateDeliveryStatus.CANCELLED;
+            return matchesSearch && cert.statusDelivery === CertificateDeliveryStatus.CANCELLED;
         }
     });
 
@@ -189,45 +201,45 @@ export const AdminAcademyCertificates: React.FC = () => {
                             className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-cbjjs-blue transition-all dark:text-white"
                         />
                     </div>
-                    <div className="relative shrink-0">
-                        {/* Estilo para garantir que o clique no input acione o calendário nativo em iframes */}
-                        <style>{`
-                            .date-input-overlay::-webkit-calendar-picker-indicator {
-                                position: absolute;
-                                left: 0; top: 0; width: 100%; height: 100%;
-                                margin: 0; padding: 0;
-                                cursor: pointer;
-                                opacity: 0;
-                            }
-                        `}</style>
-                        
-                        {/* Input que recebe o clique real (sobrepondo tudo) */}
-                        <input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            className="date-input-overlay absolute inset-0 opacity-0 w-full h-full z-20 cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
-                        />
+                    
+                    {/* Filtro por Mês (Apenas carregando do Banco e não da UI) */}
+                    <div className="relative shrink-0 z-30">
+                        <button
+                            onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)}
+                            className="flex items-center justify-between w-full sm:w-48 px-5 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-sm transition-all hover:border-cbjjs-blue text-sm font-bold dark:text-white gap-2"
+                        >
+                            <span className="flex items-center gap-2">
+                                <Calendar className="text-cbjjs-blue" size={18} />
+                                {MONTHS.find(m => m.value === selectedMonth)?.label}
+                            </span>
+                            <ChevronDown className="text-gray-400" size={16} />
+                        </button>
 
-                        {/* Visual Pill Button (z-10) */}
-                        <div className="flex items-center gap-3 px-5 py-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-sm transition-all group-hover:border-cbjjs-blue">
-                            <div className="relative">
-                                <Calendar className={`${selectedDate ? 'text-cbjjs-blue' : 'text-gray-400'}`} size={20} />
-                                {selectedDate && <div className="absolute -top-1 -right-1 w-2 h-2 bg-cbjjs-blue rounded-full border-2 border-white dark:border-slate-800"></div>}
-                            </div>
-                            <div className="flex items-center gap-2">
-                                {selectedDate && (
-                                    <button
-                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedDate(''); }}
-                                        className="relative z-30 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-500 transition-all active:scale-90"
-                                    >
-                                        <X size={14} />
-                                    </button>
-                                )}
-                                <ChevronDown className="text-gray-400" size={16} />
-                            </div>
-                        </div>
+                        {isMonthDropdownOpen && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={() => setIsMonthDropdownOpen(false)} />
+                                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 z-50 py-2 max-h-64 overflow-y-auto scrollbar-hide">
+                                    {MONTHS.map(m => (
+                                        <button
+                                            key={m.value}
+                                            onClick={() => {
+                                                setSelectedMonth(m.value);
+                                                setIsMonthDropdownOpen(false);
+                                            }}
+                                            className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors ${
+                                                selectedMonth === m.value 
+                                                    ? 'bg-blue-50 dark:bg-blue-900/30 text-cbjjs-blue' 
+                                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700'
+                                            }`}
+                                        >
+                                            {m.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
+
                     <button onClick={() => refetch()} className="p-3 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl hover:bg-gray-50 transition-all text-cbjjs-blue shadow-sm shrink-0 flex items-center justify-center">
                         <RefreshCw size={22} className={isLoading ? 'animate-spin' : ''} />
                     </button>
@@ -285,6 +297,8 @@ export const AdminAcademyCertificates: React.FC = () => {
                     ) : (
                         filteredCertificates.map(cert => {
                             const { paymentBadge, deliveryBadge } = getStatusStyles(cert.statusPayment, cert.statusDelivery);
+                            const isPaid = cert.statusPayment === CertificatePaymentStatus.PAID;
+
                             return (
                                 <div key={cert.id} className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all group">
                                     <div className="flex flex-col md:flex-row justify-between gap-6">
@@ -350,10 +364,16 @@ export const AdminAcademyCertificates: React.FC = () => {
                                                         </button>
                                                     )}
                                                     
+                                                    {/* Botão Marcar como entregue fica ativo apenas se o pagamento for confirmado (PAID) */}
                                                     <button
                                                         onClick={() => handleUpdateStatus(cert.id, CertificateDeliveryStatus.DELIVERED)}
-                                                        disabled={updatingId === cert.id}
-                                                        className="w-full md:w-auto px-6 py-3.5 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 hover:bg-cbjjs-blue"
+                                                        disabled={updatingId === cert.id || !isPaid}
+                                                        className={`w-full md:w-auto px-6 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 
+                                                            ${isPaid 
+                                                                ? 'bg-slate-900 text-white hover:bg-cbjjs-blue cursor-pointer' 
+                                                                : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed shadow-none opacity-50'
+                                                            }
+                                                        `}
                                                     >
                                                         {updatingId === cert.id ? <Loader2 className="animate-spin" size={14}/> : <Truck size={16}/>}
                                                         Marcar como Entregue
