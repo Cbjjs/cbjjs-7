@@ -127,16 +127,12 @@ export const certificateService = {
                 teamName: item.academy.team_name,
                 ownerId: item.academy.owner_id,
                 cnpj: item.academy.cnpj,
+                federationId: item.academy.federation_id,
                 responsibleCpf: item.academy.responsible_cpf,
                 phone: item.academy.phone,
-                status: item.academy.status,
                 address: item.academy.address,
-                ownerProfile: item.academy.owner_profile ? {
-                    fullName: item.academy.owner_profile.full_name,
-                    email: item.academy.owner_profile.email,
-                    dob: item.academy.owner_profile.dob,
-                    cpf: item.academy.owner_profile.cpf
-                } : undefined
+                status: item.academy.status,
+                ownerProfile: item.academy.owner_profile ? (Array.isArray(item.academy.owner_profile) ? item.academy.owner_profile[0] : item.academy.owner_profile) : undefined
             } : undefined,
             owner: {
                 fullName: item.owner?.full_name || 'Desconhecido'

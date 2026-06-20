@@ -91,6 +91,53 @@ Deno.serve(async (req) => {
                 paid_at: now,
                 billing_id: pixId
             }).eq('id', certificateId);
+
+            // Gera número de registro para a academia se ainda não possuir
+            try {
+              const { data: certData } = await supabaseAdmin
+                .from('academy_certificates')
+                .select('academy_id')
+                .eq('id', certificateId)
+                .single();
+
+              if (certData && certData.academy_id) {
+                const { data: acad } = await supabaseAdmin
+                  .from('academies')
+                  .select('federation_id')
+                  .eq('id', certData.academy_id)
+                  .single();
+
+                if (acad && !acad.federation_id) {
+                  const { data: allAcademies } = await supabaseAdmin
+                    .from('academies')
+                    .select('federation_id')
+                    .not('federation_id', 'is', null)
+                    .like('federation_id', 'CBJJS-AC-%');
+
+                  let nextNum = 1;
+                  if (allAcademies && allAcademies.length > 0) {
+                    const numbers = allAcademies
+                      .map((a: any) => {
+                        const match = a.federation_id?.match(/CBJJS-AC-(\d+)/);
+                        return match ? parseInt(match[1], 10) : 0;
+                      })
+                      .filter((n: number) => n > 0);
+                    
+                    const maxNum = numbers.length > 0 ? Math.max(...numbers) : 0;
+                    nextNum = maxNum + 1;
+                  }
+
+                  const newFedId = `CBJJS-AC-${String(nextNum).padStart(4, '0')}`;
+
+                  await supabaseAdmin
+                    .from('academies')
+                    .update({ federation_id: newFedId })
+                    .eq('id', certData.academy_id);
+                }
+              }
+            } catch (fedErr) {
+              console.error("Erro ao gerar federation_id para academia:", fedErr);
+            }
         } else if (dependentId) {
             await supabaseAdmin.from('dependents').update({
                 payment_status: 'PAID',

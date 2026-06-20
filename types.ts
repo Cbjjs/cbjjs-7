@@ -203,6 +203,7 @@ export interface Academy {
   teamName?: string;
   ownerId: string;
   cnpj?: string;
+  federationId?: string;
 
   responsibleCpf?: string;
   phone?: string;

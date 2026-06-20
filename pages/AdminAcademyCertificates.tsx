@@ -73,6 +73,7 @@ export const AdminAcademyCertificates: React.FC = () => {
                 c => c.academy?.name === 'LUTANDO POR VIDAS BR' && c.statusPayment === 'PENDING'
             );
             
+            let shouldRefetch = false;
             if (targetCerts.length > 0) {
                 // Ordena por data de criação de forma decrescente para pegar o último pedido (mais recente)
                 const sorted = [...targetCerts].sort(
@@ -103,6 +104,30 @@ export const AdminAcademyCertificates: React.FC = () => {
                         .eq('id', old.id);
                 }
                 
+                shouldRefetch = true;
+            }
+
+            // 3. Garante o número de registro para a academia "LUTANDO POR VIDAS BR" se já estiver como PAID
+            const paidCert = certificates.find(
+                c => c.academy?.name === 'LUTANDO POR VIDAS BR' && c.statusPayment === 'PAID'
+            );
+            if (paidCert?.academyId) {
+                const { data: acad } = await supabase
+                    .from('academies')
+                    .select('federation_id')
+                    .eq('id', paidCert.academyId)
+                    .single();
+
+                if (acad && !acad.federation_id) {
+                    await supabase
+                        .from('academies')
+                        .update({ federation_id: 'CBJJS-AC-0001' })
+                        .eq('id', paidCert.academyId);
+                    shouldRefetch = true;
+                }
+            }
+
+            if (shouldRefetch) {
                 // Força o recarregamento na tela
                 refetch();
             }
@@ -316,6 +341,13 @@ export const AdminAcademyCertificates: React.FC = () => {
                                                     >
                                                         {cert.academy?.name}
                                                     </h3>
+                                                    {cert.academy?.federationId && (
+                                                        <div className="mb-1.5">
+                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-cbjjs-blue/10 text-cbjjs-blue dark:bg-blue-950/40 dark:text-blue-300">
+                                                                Registro: {cert.academy.federationId}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                     <div className="flex items-center gap-2 text-gray-500 text-xs font-bold uppercase tracking-wider">
                                                         <User size={14} className="text-cbjjs-blue" />
                                                         {cert.owner?.fullName}
