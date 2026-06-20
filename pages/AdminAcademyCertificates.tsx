@@ -347,11 +347,6 @@ export const AdminAcademyCertificates: React.FC = () => {
                                                                 Registro: {cert.academy.federationId}
                                                             </span>
                                                         )}
-                                                        {cert.academyId && (
-                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-gray-300 select-all cursor-pointer" title="Clique duas vezes ou selecione para copiar">
-                                                                ID Academia: {cert.academyId}
-                                                            </span>
-                                                        )}
                                                     </div>
                                                     <div className="flex items-center gap-2 text-gray-500 text-xs font-bold uppercase tracking-wider">
                                                         <User size={14} className="text-cbjjs-blue" />

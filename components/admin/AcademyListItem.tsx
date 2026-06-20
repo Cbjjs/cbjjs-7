@@ -23,9 +23,16 @@ export const AcademyListItem: React.FC<AcademyListItemProps> = ({
       className="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-gray-200 dark:border-slate-700 flex items-center justify-between group hover:border-cbjjs-blue transition-all relative cursor-pointer"
     >
       <div className="flex-1 min-w-0 pr-4 flex flex-col justify-center">
-        <h3 className="text-lg md:text-xl font-black text-gray-900 dark:text-white group-hover:text-cbjjs-blue transition-colors truncate leading-tight">
-          {academy.name}
-        </h3>
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-lg md:text-xl font-black text-gray-900 dark:text-white group-hover:text-cbjjs-blue transition-colors truncate leading-tight">
+            {academy.name}
+          </h3>
+          {academy.federationId && (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider bg-cbjjs-blue/10 text-cbjjs-blue dark:bg-blue-950/40 dark:text-blue-300">
+              Registro: {academy.federationId}
+            </span>
+          )}
+        </div>
         <p className="text-[11px] md:text-xs font-black text-cbjjs-blue uppercase tracking-tight mt-1 truncate">
           Prof: {academy.ownerProfile?.fullName || 'Não informado'}
         </p>

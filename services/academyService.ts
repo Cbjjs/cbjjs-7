@@ -25,23 +25,24 @@ export const academyService = {
     if (error) throw error;
 
     return (academies || []).map(acc => ({
-        id: acc.id, 
-        name: acc.name, 
-        teamName: acc.team_name, 
+        id: acc.id,
+        name: acc.name,
+        teamName: acc.team_name,
         ownerId: acc.owner_id,
-        cnpj: acc.cnpj, 
-        responsibleCpf: acc.responsible_cpf, 
+        cnpj: acc.cnpj,
+        responsibleCpf: acc.responsible_cpf,
         phone: acc.phone,
-        address: acc.address, 
+        federationId: acc.federation_id,
+        address: acc.address,
         status: acc.status as RegistrationStatus,
         deleted: acc.deleted,
-        blackBeltCertificate: { 
-            status: acc.doc_certificate_status || (acc.certificate_url ? DocumentStatus.PENDING : DocumentStatus.MISSING), 
+        blackBeltCertificate: {
+            status: acc.doc_certificate_status || (acc.certificate_url ? DocumentStatus.PENDING : DocumentStatus.MISSING),
             url: acc.certificate_url,
-            rejectionReason: acc.doc_certificate_reason 
+            rejectionReason: acc.doc_certificate_reason
         },
-        identityDocument: { 
-            status: acc.doc_identity_status || (acc.identity_url ? DocumentStatus.PENDING : DocumentStatus.MISSING), 
+        identityDocument: {
+            status: acc.doc_identity_status || (acc.identity_url ? DocumentStatus.PENDING : DocumentStatus.MISSING),
             url: acc.identity_url,
             rejectionReason: acc.doc_identity_reason
         }
@@ -97,13 +98,14 @@ export const academyService = {
 
   // --- MÉTODOS DO ADMIN ---
 
-  async getAdminAcademies(params: { 
-    subTab: 'approvals' | 'all' | 'trash', 
-    searchTerm: string, 
-    page: number, 
-    pageSize: number 
+  async getAdminAcademies(params: {
+    subTab: 'approvals' | 'all' | 'trash',
+    searchTerm: string,
+    page: number,
+    pageSize: number,
+    onlyWithCertificate?: boolean
   }) {
-    const { subTab, searchTerm, page, pageSize } = params;
+    const { subTab, searchTerm, page, pageSize, onlyWithCertificate } = params;
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
@@ -135,6 +137,9 @@ export const academyService = {
             }
         } else {
             query = query.eq('status', 'APPROVED');
+            if (onlyWithCertificate) {
+                query = query.not('federation_id', 'is', null).neq('federation_id', '');
+            }
         }
     }
 
@@ -163,24 +168,25 @@ export const academyService = {
             cnpj: a.cnpj,
             responsibleCpf: a.responsible_cpf,
             phone: a.phone,
+            federationId: a.federation_id,
             status: a.status as RegistrationStatus,
             deleted: a.deleted,
             address: a.address,
-            blackBeltCertificate: { 
-                url: a.certificate_url, 
+            blackBeltCertificate: {
+                url: a.certificate_url,
                 status: a.doc_certificate_status || (a.certificate_url ? DocumentStatus.PENDING : DocumentStatus.MISSING),
                 rejectionReason: a.doc_certificate_reason
             },
-            identityDocument: { 
-                url: a.identity_url, 
+            identityDocument: {
+                url: a.identity_url,
                 status: a.doc_identity_status || (a.identity_url ? DocumentStatus.PENDING : DocumentStatus.MISSING),
                 rejectionReason: a.doc_identity_reason
             },
-            ownerProfile: profile ? { 
-                fullName: profile.full_name, 
-                email: profile.email, 
-                dob: profile.dob, 
-                cpf: profile.cpf 
+            ownerProfile: profile ? {
+                fullName: profile.full_name,
+                email: profile.email,
+                dob: profile.dob,
+                cpf: profile.cpf
             } : undefined,
             pendingChangeRequest: pending ? {
                 id: pending.id,

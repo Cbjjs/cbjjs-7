@@ -10,7 +10,7 @@ export const AdminAcademies: React.FC = () => {
   const {
     academies, totalCount, totalPages, isLoading, isError, subTab, searchTerm, page,
     viewingAcademy, processingId, isDeleting,
-    rejectingDoc, rejectionReason,
+    rejectingDoc, rejectionReason, filterCertificate, setFilterCertificate,
     setSubTab, setSearchTerm, setPage, setViewingAcademy,
     setRejectingDoc, setRejectionReason,
     refetch, handleApproveAcademy, handleApproveUpdate, handleConfirmDelete,
@@ -59,13 +59,40 @@ export const AdminAcademies: React.FC = () => {
               >
                   <Building size={16} className="mr-2"/> Academias Aprovadas
               </button>
-              <button 
-                onClick={() => setSubTab('trash')} 
+              <button
+                onClick={() => setSubTab('trash')}
                 className={`pb-4 px-2 text-sm font-black uppercase tracking-widest border-b-2 transition-all flex items-center ${subTab === 'trash' ? 'border-cbjjs-blue text-cbjjs-blue' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
               >
                   <Trash2 size={16} className="mr-2"/> Lixeira
               </button>
           </div>
+
+          {subTab === 'all' && (
+              <div className="flex justify-end mb-6">
+                  <div className="inline-flex p-1 bg-gray-100 dark:bg-slate-900 rounded-2xl border dark:border-slate-800">
+                      <button
+                          onClick={() => setFilterCertificate('all')}
+                          className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                              filterCertificate === 'all'
+                                  ? 'bg-white dark:bg-slate-800 text-cbjjs-blue shadow-md'
+                                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                          }`}
+                      >
+                          Todas
+                      </button>
+                      <button
+                          onClick={() => setFilterCertificate('with_certificate')}
+                          className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                              filterCertificate === 'with_certificate'
+                                  ? 'bg-white dark:bg-slate-800 text-cbjjs-blue shadow-md'
+                                  : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                          }`}
+                      >
+                          Apenas com Certificado
+                      </button>
+                  </div>
+              </div>
+          )}
           
           <div className="flex flex-col md:flex-row justify-between items-center bg-white dark:bg-slate-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm mb-6 gap-4">
               <div className="relative w-full max-w-lg">

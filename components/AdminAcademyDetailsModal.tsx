@@ -126,6 +126,12 @@ export const AdminAcademyDetailsModal: React.FC<AdminAcademyDetailsModalProps> =
                             <div><span className={modalLabelClass}>Telefone</span><p className="font-bold dark:text-white text-sm flex items-center gap-2"><Phone size={14}/> {academy.phone || '-'}</p></div>
                             <div><span className={modalLabelClass}>CNPJ</span><p className="font-bold dark:text-white text-sm">{academy.cnpj || 'Não inf.'}</p></div>
                             <div><span className={modalLabelClass}>Status Unidade</span><span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${academy.status === 'APPROVED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{academy.status === 'APPROVED' ? 'APROVADA' : 'EM ANÁLISE'}</span></div>
+                            {academy.federationId && (
+                                <div className="col-span-2">
+                                    <span className={modalLabelClass}>Número de Registro</span>
+                                    <p className="font-black text-cbjjs-blue text-sm uppercase">{academy.federationId}</p>
+                                </div>
+                            )}
                         </div>
                         <div className="md:col-span-2">
                             <span className={modalLabelClass}>Endereço da Unidade</span>

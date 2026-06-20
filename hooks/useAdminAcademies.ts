@@ -13,6 +13,7 @@ export function useAdminAcademies() {
   const [subTab, setSubTab] = useState<'approvals' | 'all' | 'trash'>('approvals');
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
+  const [filterCertificate, setFilterCertificate] = useState<'all' | 'with_certificate'>('all');
   const [viewingAcademy, setViewingAcademy] = useState<AcademyWithProfile | null>(null);
   
   const [processingId, setProcessingId] = useState<string | null>(null);
@@ -22,11 +23,15 @@ export function useAdminAcademies() {
   const [rejectionReason, setRejectionReason] = useState('');
 
   const { data: queryData, isLoading, isError, refetch, isFetching } = useSupabaseQuery<{data: AcademyWithProfile[], total: number}>(
-    ['admin-academies', subTab, searchTerm, page],
+    ['admin-academies', subTab, searchTerm, page, filterCertificate],
     async (signal) => {
       try {
         const result = await academyService.getAdminAcademies({
-          subTab, searchTerm, page, pageSize: PAGE_SIZE
+          subTab,
+          searchTerm,
+          page,
+          pageSize: PAGE_SIZE,
+          onlyWithCertificate: filterCertificate === 'with_certificate'
         });
         return { data: result, error: null };
       } catch (err: any) {
@@ -154,7 +159,9 @@ export function useAdminAcademies() {
     isDeleting,
     rejectingDoc,
     rejectionReason,
-    setSubTab: (tab: 'approvals' | 'all' | 'trash') => { setSubTab(tab); setPage(1); },
+    filterCertificate,
+    setFilterCertificate: (val: 'all' | 'with_certificate') => { setFilterCertificate(val); setPage(1); },
+    setSubTab: (tab: 'approvals' | 'all' | 'trash') => { setSubTab(tab); setPage(1); setFilterCertificate('all'); },
     setSearchTerm: (term: string) => { setSearchTerm(term); setPage(1); },
     setPage,
     setViewingAcademy,
