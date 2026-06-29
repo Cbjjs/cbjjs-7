@@ -4,7 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import { Role } from '../types';
 import { SidebarProfile } from './SidebarProfile';
 import {
-  Menu, X, Users, Calendar, LogOut, Sun, Moon, Shield, Award, CreditCard, Building, School, Settings, UserCheck, UserPlus, Printer, Contact, Scan, BookOpen, FileBadge
+  Menu, X, Users, Calendar, LogOut, Sun, Moon, Shield, Award, CreditCard, Building, School, Settings, UserCheck, UserPlus, Printer, Contact, Scan, BookOpen, FileBadge, Mail
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -70,6 +70,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate
 
          { id: 'admin-events', label: 'Gestão Eventos', icon: Calendar, roles: [Role.ADMIN] },
          { id: 'admin-settings', label: 'Gestão Informações', icon: Settings, roles: [Role.ADMIN] },
+         { id: 'admin-resend', label: 'Disparo de E-mails', icon: Mail, roles: [Role.ADMIN] },
       ]
     }
   ];

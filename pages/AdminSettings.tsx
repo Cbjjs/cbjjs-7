@@ -133,7 +133,7 @@ export const AdminSettings: React.FC = () => {
                            <h3 className="text-lg font-black uppercase tracking-widest dark:text-white">Conteúdo do Site</h3>
                         </div>
                         <div className="grid grid-cols-1 gap-6">
-                            {settings.filter(s => !s.key.includes('plan_') && s.key !== 'registration_fee').map(s => (
+                            {settings.filter(s => !s.key.includes('plan_') && s.key !== 'registration_fee' && s.key !== 'resend_api_key').map(s => (
                                 <div key={s.key} className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-gray-100 dark:border-gray-700 shadow-sm group hover:border-cbjjs-blue transition-all">
                                     <label className="text-[10px] font-black text-cbjjs-blue uppercase tracking-widest block mb-4 flex items-center gap-2">
                                         <div className="w-1.5 h-1.5 bg-cbjjs-blue rounded-full"></div>

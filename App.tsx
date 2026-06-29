@@ -15,6 +15,7 @@ import { AcademyRegister } from './pages/AcademyRegister';
 import { MyDependents } from './pages/MyDependents';
 import { AdminEventAccess } from './pages/AdminEventAccess';
 import { AdminContactManagement } from './pages/AdminContactManagement';
+import { AdminResend } from './pages/AdminResend';
 import { CustomLoader } from './components/CustomLoader';
 import { Role } from './types';
 import { WifiOff } from 'lucide-react';
@@ -91,7 +92,7 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-        const adminPages = ['admin-users', 'admin-professors', 'admin-academies', 'admin-events', 'admin-settings', 'admin-id-cards', 'admin-all-users', 'admin-event-access', 'admin-contacts'];
+        const adminPages = ['admin-users', 'admin-professors', 'admin-academies', 'admin-events', 'admin-settings', 'admin-id-cards', 'admin-all-users', 'admin-event-access', 'admin-contacts', 'admin-resend'];
         if (adminPages.includes(currentPage) && user.role !== Role.ADMIN) {
             handleNavigate('dashboard');
         }
@@ -139,6 +140,7 @@ const AppContent: React.FC = () => {
 
       case 'admin-events': return user?.role === Role.ADMIN ? <AdminPanel view="events" /> : <Dashboard />;
       case 'admin-settings': return user?.role === Role.ADMIN ? <AdminPanel view="settings" /> : <Dashboard />;
+      case 'admin-resend': return user?.role === Role.ADMIN ? <AdminResend /> : <Dashboard />;
       case 'admin-all-users': return user?.role === Role.ADMIN ? <AdminPanel view="all-users" /> : <Dashboard />;
       default: return <Dashboard />;
     }
