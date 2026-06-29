@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 
+declare const Deno: any;
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-application-name',
@@ -21,10 +23,16 @@ serve(async (req) => {
     }
 
     const body = await req.json()
-    const { apiKey, from, to, subject, html } = body
+    const { apiKey: clientApiKey, from, to, subject, html } = body
+
+    // Prioriza a Secret do Supabase (RESEND_API_KEY), com fallback para a chave enviada pelo cliente (se houver)
+    const apiKey = Deno.env.get('RESEND_API_KEY') || clientApiKey
 
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: "A chave de API do Resend é obrigatória para o teste." }), {
+      return new Response(JSON.stringify({ 
+        error: "Chave de API do Resend não configurada.", 
+        details: "Por favor, configure a Secret 'RESEND_API_KEY' no painel do Supabase (Project Settings -> Edge Functions -> Manage Secrets) ou insira uma chave temporária na tela." 
+      }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
