@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useEffect, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef, useCallback } from 'react';
 import { User, Role, PaymentStatus, DocumentStatus, Belt, RegistrationStatus } from '../types';
 import { supabase } from '../lib/supabase';
 import { safeDbCall } from '../utils/dbResilience';
@@ -159,6 +159,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(null);
         setAuthStatus('UNAUTHENTICATED');
         setLoading(false);
+      } else if (event === 'PASSWORD_RECOVERY') {
+        setAuthStatus('PASSWORD_RECOVERY');
+        setLoading(false);
       }
     });
 
@@ -270,10 +273,46 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     await refreshProfile();
   };
 
+  const forgotPassword = async (email: string) => {
+    setError(null);
+    setLoading(true);
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/`
+      });
+      if (resetError) throw resetError;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    setError(null);
+    setLoading(true);
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      if (updateError) throw updateError;
+      
+      await supabase.auth.signOut();
+      setUser(null);
+      setAuthStatus('UNAUTHENTICATED');
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ 
+    <AuthContext.Provider value={{
       user, isAuthenticated: authStatus === 'AUTHENTICATED', authStatus, connectionStatus,
-      login, logout, register, forgotPassword: async () => {}, updatePassword: async () => {},
+      login, logout, register, forgotPassword, updatePassword,
       updateUser, saveOnboardingProgress, finalizeOnboarding,
       loading, isProfileLoading, error, needsEmailConfirmation, lastRegisteredEmail,
       setNeedsEmailConfirmation, clearError, resetAuth: () => { window.location.reload(); }, 
