@@ -155,5 +155,15 @@ export const certificateService = {
 
         if (error) throw error;
         return true;
+    },
+
+    async markAsPaid(certificateId: string) {
+        const { error } = await supabase
+            .from('academy_certificates')
+            .update({ status_payment: 'PAID' })
+            .eq('id', certificateId);
+
+        if (error) throw error;
+        return true;
     }
 };
