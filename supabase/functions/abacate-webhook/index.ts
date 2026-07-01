@@ -59,23 +59,25 @@ Deno.serve(async (req) => {
               const { data: allAcademies } = await supabaseAdmin
                 .from('academies')
                 .select('federation_id')
-                .not('federation_id', 'is', null)
-                .like('federation_id', 'CBJJS-AC-%');
+                .not('federation_id', 'is', null);
 
-              let nextNum = 1;
+              let nextNum = 1000;
               if (allAcademies && allAcademies.length > 0) {
                 const numbers = allAcademies
                   .map((a: any) => {
+                    if (a.federation_id && /^\d+$/.test(a.federation_id)) {
+                      return parseInt(a.federation_id, 10);
+                    }
                     const match = a.federation_id?.match(/CBJJS-AC-(\d+)/);
                     return match ? parseInt(match[1], 10) : 0;
                   })
                   .filter((n: number) => n > 0);
                 
                 const maxNum = numbers.length > 0 ? Math.max(...numbers) : 0;
-                nextNum = maxNum + 1;
+                nextNum = maxNum < 1000 ? 1000 : maxNum + 1;
               }
 
-              const newFedId = `CBJJS-AC-${String(nextNum).padStart(4, '0')}`;
+              const newFedId = String(nextNum).padStart(4, '0');
 
               await supabaseAdmin
                 .from('academies')

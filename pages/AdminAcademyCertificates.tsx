@@ -121,7 +121,7 @@ export const AdminAcademyCertificates: React.FC = () => {
                 if (acad && !acad.federation_id) {
                     await supabase
                         .from('academies')
-                        .update({ federation_id: 'CBJJS-AC-0001' })
+                        .update({ federation_id: '0001' })
                         .eq('id', paidCert.academyId);
                     shouldRefetch = true;
                 }
