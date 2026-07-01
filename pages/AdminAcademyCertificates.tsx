@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     RefreshCw,
     Search,
@@ -13,7 +13,10 @@ import {
     Loader2,
     X,
     ChevronDown,
-    MessageSquare
+    MessageSquare,
+    MoreVertical,
+    Check,
+    AlertTriangle
 } from 'lucide-react';
 import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { certificateService } from '../services/certificateService';
@@ -48,6 +51,8 @@ export const AdminAcademyCertificates: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'NEW' | 'DELIVERED' | 'CANCELLED'>('NEW');
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [viewingAcademy, setViewingAcademy] = useState<any>(null);
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
 
     const { data: certsData, isLoading, refetch } = useSupabaseQuery<AcademyCertificate[]>(
         ['admin-certificates', selectedMonth, selectedYear],
@@ -66,8 +71,19 @@ export const AdminAcademyCertificates: React.FC = () => {
 
     const certificates = certsData?.data || [];
 
+    // Fechar menu de 3 pontinhos ao clicar fora
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setActiveMenuId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     // Bloco corretor automático temporário de dados para a academia "LUTANDO POR VIDAS BR"
-    React.useEffect(() => {
+    useEffect(() => {
         const fixLutandoPorVidas = async () => {
             const targetCerts = certificates.filter(
                 c => c.academy?.name === 'LUTANDO POR VIDAS BR' && c.statusPayment === 'PENDING'
@@ -171,6 +187,19 @@ export const AdminAcademyCertificates: React.FC = () => {
         }
     };
 
+    const handleMarkAsPaid = async (id: string) => {
+        setUpdatingId(id);
+        try {
+            await certificateService.markAsPaid(id);
+            addToast('success', 'Pedido marcado como pago com sucesso!');
+            refetch();
+        } catch (err) {
+            addToast('error', 'Falha ao marcar como pago.');
+        } finally {
+            setUpdatingId(null);
+        }
+    };
+
     const getStatusStyles = (paymentStatus: CertificatePaymentStatus, deliveryStatus: CertificateDeliveryStatus) => {
         let paymentBadge = '';
         let deliveryBadge = '';
@@ -229,7 +258,6 @@ export const AdminAcademyCertificates: React.FC = () => {
                         />
                     </div>
                     
-                    {/* Filtro por Mês (Apenas carregando do Banco e não da UI) */}
                     <div className="relative shrink-0 z-30">
                         <button
                             onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)}
@@ -325,9 +353,11 @@ export const AdminAcademyCertificates: React.FC = () => {
                         filteredCertificates.map(cert => {
                             const { paymentBadge, deliveryBadge } = getStatusStyles(cert.statusPayment, cert.statusDelivery);
                             const isPaid = cert.statusPayment === CertificatePaymentStatus.PAID;
+                            const isCancelled = cert.statusPayment === CertificatePaymentStatus.CANCELLED;
+                            const isMenuOpen = activeMenuId === cert.id;
 
                             return (
-                                <div key={cert.id} className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all group">
+                                <div key={cert.id} className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all group relative">
                                     <div className="flex flex-col md:flex-row justify-between gap-6">
                                         <div className="flex-1 space-y-4">
                                             <div className="flex items-center gap-4">
@@ -395,37 +425,63 @@ export const AdminAcademyCertificates: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col md:flex-row items-center shrink-0 gap-3">
+                                        <div className="flex flex-col md:flex-row items-center shrink-0 gap-3 self-center">
                                             {cert.statusDelivery !== CertificateDeliveryStatus.DELIVERED &&
                                              cert.statusDelivery !== CertificateDeliveryStatus.CANCELLED && (
-                                                <>
-                                                    {cert.statusDelivery === CertificateDeliveryStatus.WAITING_PAYMENT && (
-                                                        <button
-                                                            onClick={() => handleUpdateStatus(cert.id, CertificateDeliveryStatus.CANCELLED)}
-                                                            disabled={updatingId === cert.id}
-                                                            className="w-full md:w-auto px-6 py-3.5 bg-red-50 text-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2 hover:bg-red-100"
-                                                        >
-                                                            {updatingId === cert.id ? <Loader2 className="animate-spin" size={14}/> : <X size={16}/>}
-                                                            Cancelar Pedido
-                                                        </button>
-                                                    )}
-                                                    
-                                                    {/* Botão Marcar como entregue fica ativo apenas se o pagamento for confirmado (PAID) */}
-                                                    <button
-                                                        onClick={() => handleUpdateStatus(cert.id, CertificateDeliveryStatus.DELIVERED)}
-                                                        disabled={updatingId === cert.id || !isPaid}
-                                                        className={`w-full md:w-auto px-6 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2
-                                                            ${isPaid
-                                                                ? 'bg-slate-900 text-white hover:bg-cbjjs-blue cursor-pointer'
-                                                                : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed shadow-none opacity-50'
-                                                            }
-                                                        `}
-                                                    >
-                                                        {updatingId === cert.id ? <Loader2 className="animate-spin" size={14}/> : <Truck size={16}/>}
-                                                        Marcar como Entregue
-                                                    </button>
-                                                </>
+                                                <button
+                                                    onClick={() => handleUpdateStatus(cert.id, CertificateDeliveryStatus.DELIVERED)}
+                                                    disabled={updatingId === cert.id || !isPaid}
+                                                    className={`w-full md:w-auto px-6 py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2
+                                                        ${isPaid
+                                                            ? 'bg-slate-900 text-white hover:bg-cbjjs-blue cursor-pointer'
+                                                            : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed shadow-none opacity-50'
+                                                        }
+                                                    `}
+                                                >
+                                                    {updatingId === cert.id ? <Loader2 className="animate-spin" size={14}/> : <Truck size={16}/>}
+                                                    Marcar como Entregue
+                                                </button>
                                             )}
+
+                                            {/* Menu de 3 Pontinhos */}
+                                            <div className="relative" ref={isMenuOpen ? menuRef : null}>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setActiveMenuId(isMenuOpen ? null : cert.id);
+                                                    }}
+                                                    className="p-3 text-gray-400 hover:text-cbjjs-blue hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl transition-all"
+                                                >
+                                                    <MoreVertical size={20} />
+                                                </button>
+
+                                                {isMenuOpen && (
+                                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 z-50 py-2">
+                                                        {!isPaid && !isCancelled && (
+                                                            <button
+                                                                onClick={() => {
+                                                                    handleMarkAsPaid(cert.id);
+                                                                    setActiveMenuId(null);
+                                                                }}
+                                                                className="w-full text-left px-4 py-3 text-xs font-bold text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 flex items-center gap-2 transition-colors"
+                                                            >
+                                                                <Check size={14} /> Marcar como Pago
+                                                            </button>
+                                                        )}
+                                                        {!isCancelled && cert.statusDelivery !== CertificateDeliveryStatus.DELIVERED && (
+                                                            <button
+                                                                onClick={() => {
+                                                                    handleUpdateStatus(cert.id, CertificateDeliveryStatus.CANCELLED);
+                                                                    setActiveMenuId(null);
+                                                                }}
+                                                                className="w-full text-left px-4 py-3 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 transition-colors"
+                                                            >
+                                                                <X size={14} /> Cancelar Pedido
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
