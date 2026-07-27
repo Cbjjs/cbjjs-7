@@ -11,7 +11,7 @@ import { CustomLoader } from '../components/CustomLoader';
 
 export const AdminTeam: React.FC = () => {
   const { user: currentUser } = useAuth();
-  const { showToast } = useToast();
+  const { addToast } = useToast();
   const [team, setTeam] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,7 +59,7 @@ export const AdminTeam: React.FC = () => {
       setTeam(data as User[]);
     } catch (error) {
       console.error('Error fetching team:', error);
-      showToast('Erro ao carregar equipe administrativa.', 'error');
+      addToast('error', 'Erro ao carregar equipe administrativa.');
     } finally {
       setLoading(false);
     }
@@ -82,13 +82,13 @@ export const AdminTeam: React.FC = () => {
 
       if (error) throw error;
       if (!data) {
-        showToast('Usuário não encontrado com este e-mail.', 'warn');
+        addToast('warning', 'Usuário não encontrado com este e-mail.');
       } else {
         setFoundUser(data as User);
       }
     } catch (error) {
       console.error('Error searching user:', error);
-      showToast('Erro ao buscar usuário.', 'error');
+      addToast('error', 'Erro ao buscar usuário.');
     } finally {
       setSearchingUser(false);
     }
@@ -100,14 +100,14 @@ export const AdminTeam: React.FC = () => {
       setIsPromoting(true);
       await userService.updateRole(foundUser.id, promotingRole);
       
-      showToast(`Usuário promovido a ${promotingRole === Role.ADMIN ? 'Super Admin' : 'Gestor'} com sucesso!`, 'success');
+      addToast('success', `Usuário promovido a ${promotingRole === Role.ADMIN ? 'Super Admin' : 'Gestor'} com sucesso!`);
       setIsModalOpen(false);
       setFoundUser(null);
       setSearchEmail('');
       fetchTeam();
     } catch (error) {
       console.error('Error promoting user:', error);
-      showToast('Erro ao promover usuário.', 'error');
+      addToast('error', 'Erro ao promover usuário.');
     } finally {
       setIsPromoting(false);
     }
@@ -119,11 +119,11 @@ export const AdminTeam: React.FC = () => {
     try {
       await userService.updateRole(userId, Role.STUDENT);
       
-      showToast('Acesso administrativo revogado com sucesso.', 'success');
-      fetchTeam();
+      addToast('success', 'Acesso administrativo revogado com sucesso.');
+      await fetchTeam();
     } catch (error) {
       console.error('Error revoking access:', error);
-      showToast('Erro ao revogar acesso.', 'error');
+      addToast('error', 'Erro ao revogar acesso.');
     }
   };
 
