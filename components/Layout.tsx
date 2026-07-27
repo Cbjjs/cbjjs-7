@@ -4,7 +4,7 @@ import { useTheme } from '../context/ThemeContext';
 import { Role } from '../types';
 import { SidebarProfile } from './SidebarProfile';
 import {
-  Menu, X, Users, Calendar, LogOut, Sun, Moon, Shield, Award, CreditCard, Building, School, Settings, UserCheck, UserPlus, Printer, Contact, Scan, BookOpen, FileBadge, Mail
+  Menu, X, Users, Calendar, LogOut, Sun, Moon, Shield, Award, CreditCard, Building, School, Settings, UserCheck, UserPlus, Printer, Contact, Scan, BookOpen, FileBadge, Mail, UsersRound
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -59,13 +59,14 @@ export const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate
     {
       title: 'Administração',
       items: [
+         { id: 'admin-team', label: 'Equipe Administrativa', icon: UsersRound, roles: [Role.ADMIN] },
          { id: 'admin-event-access', label: 'Acesso Evento', icon: Scan, roles: [Role.ADMIN] },
          { id: 'admin-contacts', label: 'Gestão de Contatos', icon: BookOpen, roles: [Role.ADMIN] },
          { id: 'admin-all-users', label: 'Gestão de Contas', icon: Contact, roles: [Role.ADMIN] },
-         { id: 'admin-users', label: 'Gestão Atletas', icon: Users, roles: [Role.ADMIN] },
+         { id: 'admin-users', label: 'Gestão Atletas', icon: Users, roles: [Role.ADMIN, Role.GESTOR] },
          { id: 'admin-professors', label: 'Gestão Professores', icon: UserCheck, roles: [Role.ADMIN] },
-         { id: 'admin-academies', label: 'Gestão Academias', icon: School, roles: [Role.ADMIN] },
-         { id: 'admin-certificates', label: 'Certificados Academias', icon: FileBadge, roles: [Role.ADMIN] },
+         { id: 'admin-academies', label: 'Gestão Academias', icon: School, roles: [Role.ADMIN, Role.GESTOR] },
+         { id: 'admin-certificates', label: 'Certificados Academias', icon: FileBadge, roles: [Role.ADMIN, Role.GESTOR] },
          { id: 'admin-id-cards', label: 'Carteirinhas', icon: Printer, roles: [Role.ADMIN] },
 
          { id: 'admin-events', label: 'Gestão Eventos', icon: Calendar, roles: [Role.ADMIN] },

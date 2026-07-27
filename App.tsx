@@ -16,6 +16,7 @@ import { MyDependents } from './pages/MyDependents';
 import { AdminEventAccess } from './pages/AdminEventAccess';
 import { AdminContactManagement } from './pages/AdminContactManagement';
 import { AdminResend } from './pages/AdminResend';
+import { AdminTeam } from './pages/AdminTeam';
 import { CustomLoader } from './components/CustomLoader';
 import { Role } from './types';
 import { WifiOff } from 'lucide-react';
@@ -92,8 +93,15 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-        const adminPages = ['admin-users', 'admin-professors', 'admin-academies', 'admin-events', 'admin-settings', 'admin-id-cards', 'admin-all-users', 'admin-event-access', 'admin-contacts', 'admin-resend'];
-        if (adminPages.includes(currentPage) && user.role !== Role.ADMIN) {
+        const gestorPages = ['admin-users', 'admin-academies', 'admin-certificates'];
+        const adminOnlyPages = ['admin-team', 'admin-professors', 'admin-events', 'admin-settings', 'admin-id-cards', 'admin-all-users', 'admin-event-access', 'admin-contacts', 'admin-resend'];
+        
+        const isGestorPage = gestorPages.includes(currentPage);
+        const isAdminOnlyPage = adminOnlyPages.includes(currentPage);
+
+        if (isAdminOnlyPage && user.role !== Role.ADMIN) {
+            handleNavigate('dashboard');
+        } else if (isGestorPage && user.role !== Role.ADMIN && user.role !== Role.GESTOR) {
             handleNavigate('dashboard');
         }
     }
@@ -130,12 +138,13 @@ const AppContent: React.FC = () => {
       case 'academy-register': return <AcademyRegister />;
       case 'my-dependents': return <MyDependents />;
       case 'students': return <MyStudents />;
+      case 'admin-team': return user?.role === Role.ADMIN ? <AdminTeam /> : <Dashboard />;
       case 'admin-event-access': return user?.role === Role.ADMIN ? <AdminEventAccess /> : <Dashboard />;
       case 'admin-contacts': return user?.role === Role.ADMIN ? <AdminContactManagement /> : <Dashboard />;
-      case 'admin-users': return user?.role === Role.ADMIN ? <AdminPanel view="users" /> : <Dashboard />;
+      case 'admin-users': return (user?.role === Role.ADMIN || user?.role === Role.GESTOR) ? <AdminPanel view="users" /> : <Dashboard />;
       case 'admin-professors': return user?.role === Role.ADMIN ? <AdminPanel view="professors" /> : <Dashboard />;
-      case 'admin-academies': return user?.role === Role.ADMIN ? <AdminPanel view="academies" /> : <Dashboard />;
-      case 'admin-certificates': return user?.role === Role.ADMIN ? <AdminPanel view="academy-certificates" /> : <Dashboard />;
+      case 'admin-academies': return (user?.role === Role.ADMIN || user?.role === Role.GESTOR) ? <AdminPanel view="academies" /> : <Dashboard />;
+      case 'admin-certificates': return (user?.role === Role.ADMIN || user?.role === Role.GESTOR) ? <AdminPanel view="academy-certificates" /> : <Dashboard />;
       case 'admin-id-cards': return user?.role === Role.ADMIN ? <AdminIDCards /> : <Dashboard />;
 
       case 'admin-events': return user?.role === Role.ADMIN ? <AdminPanel view="events" /> : <Dashboard />;

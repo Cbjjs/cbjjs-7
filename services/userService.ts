@@ -52,5 +52,14 @@ export const userService = {
 
     if (error) throw error;
     return data;
+  },
+
+  async updateRole(userId: string, role: Role) {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role })
+      .eq('id', userId);
+
+    if (error) throw error;
   }
 };
