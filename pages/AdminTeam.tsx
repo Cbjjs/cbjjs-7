@@ -219,7 +219,7 @@ export const AdminTeam: React.FC = () => {
       {/* Modal Adicionar Membro */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-scaleIn">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl border border-slate-200 dark:border-slate-800 animate-scaleIn">
             <div className="p-8">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">ADICIONAR MEMBRO</h3>
