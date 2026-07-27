@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import { Role, User } from '../types';
 import { userService } from '../services/userService';
 import {
-  Users, UserPlus, ShieldAlert, Trash2, Search, Mail, ShieldCheck, UserCog, Loader2
+  Users, UserPlus, ShieldAlert, Trash2, Search, Mail, ShieldCheck, UserCog, Loader2, X
 } from 'lucide-react';
 import { CustomLoader } from '../components/CustomLoader';
 
