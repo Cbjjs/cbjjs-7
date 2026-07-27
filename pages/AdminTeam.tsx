@@ -228,7 +228,7 @@ export const AdminTeam: React.FC = () => {
                   setFoundUser(null);
                   setSearchEmail('');
                 }} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
-                  <Trash2 size={20} className="text-slate-400" />
+                  <X size={20} className="text-slate-400" />
                 </button>
               </div>
 
