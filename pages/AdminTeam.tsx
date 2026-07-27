@@ -20,6 +20,31 @@ export const AdminTeam: React.FC = () => {
   const [searchingUser, setSearchingUser] = useState(false);
   const [promotingRole, setPromotingRole] = useState<Role>(Role.GESTOR);
   const [isPromoting, setIsPromoting] = useState(false);
+  const [suggestions, setSuggestions] = useState<User[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Busca sugestões de e-mail em tempo real
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchEmail.length < 3 || foundUser) {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
+
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .ilike('email', `%${searchEmail}%`)
+        .limit(5);
+
+      setSuggestions((data as User[]) || []);
+      setShowSuggestions(true);
+    };
+
+    const timer = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(timer);
+  }, [searchEmail, foundUser]);
 
   const fetchTeam = async () => {
     try {
@@ -133,7 +158,7 @@ export const AdminTeam: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Membro</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Nome / Membro</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">E-mail</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Nível de Acesso</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Ações</th>
@@ -211,21 +236,44 @@ export const AdminTeam: React.FC = () => {
                 <div>
                   <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">BUSCAR POR E-MAIL</label>
                   <div className="relative">
-                    <input 
+                    <input
                       type="email"
                       value={searchEmail}
-                      onChange={(e) => setSearchEmail(e.target.value)}
+                      onChange={(e) => {
+                        setSearchEmail(e.target.value);
+                        if (foundUser) setFoundUser(null);
+                      }}
                       placeholder="email@exemplo.com"
                       className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-transparent focus:border-cbjjs-blue rounded-2xl px-5 py-4 text-sm font-bold transition-all outline-none pr-12"
                       onKeyDown={(e) => e.key === 'Enter' && handleSearchUser()}
                     />
-                    <button 
+                    <button
                       onClick={handleSearchUser}
                       disabled={searchingUser || !searchEmail}
                       className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-cbjjs-blue text-white rounded-xl disabled:opacity-50 transition-all active:scale-90 shadow-md shadow-blue-500/20"
                     >
                       {searchingUser ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
                     </button>
+
+                    {/* Lista de Sugestões */}
+                    {showSuggestions && suggestions.length > 0 && (
+                      <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 z-[70] overflow-hidden animate-fadeIn max-h-48 overflow-y-auto">
+                        {suggestions.map((s) => (
+                          <button
+                            key={s.id}
+                            onClick={() => {
+                              setFoundUser(s);
+                              setSearchEmail(s.email);
+                              setShowSuggestions(false);
+                            }}
+                            className="w-full text-left px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex flex-col"
+                          >
+                            <span className="text-xs font-black text-slate-900 dark:text-white uppercase">{s.fullName}</span>
+                            <span className="text-[10px] text-slate-400 font-bold">{s.email}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
