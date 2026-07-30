@@ -147,7 +147,7 @@ const AppContent: React.FC = () => {
       case 'admin-certificates': return (user?.role === Role.ADMIN || user?.role === Role.GESTOR) ? <AdminPanel view="academy-certificates" /> : <Dashboard />;
       case 'admin-id-cards': return user?.role === Role.ADMIN ? <AdminIDCards /> : <Dashboard />;
 
-      case 'admin-events': return user?.role === Role.ADMIN ? <AdminPanel view="events" /> : <Dashboard />;
+      case 'admin-events': return (user?.role === Role.ADMIN || user?.role === Role.GESTOR) ? <AdminPanel view="events" /> : <Dashboard />;
       case 'admin-settings': return user?.role === Role.ADMIN ? <AdminPanel view="settings" /> : <Dashboard />;
       case 'admin-resend': return user?.role === Role.ADMIN ? <AdminResend /> : <Dashboard />;
       case 'admin-all-users': return (user?.role === Role.ADMIN || user?.role === Role.GESTOR) ? <AdminPanel view="all-users" /> : <Dashboard />;

@@ -69,7 +69,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate
          { id: 'admin-certificates', label: 'Certificados Academias', icon: FileBadge, roles: [Role.ADMIN, Role.GESTOR] },
          { id: 'admin-id-cards', label: 'Carteirinhas', icon: Printer, roles: [Role.ADMIN] },
 
-         { id: 'admin-events', label: 'Gestão Eventos', icon: Calendar, roles: [Role.ADMIN] },
+         { id: 'admin-events', label: 'Gestão Eventos', icon: Calendar, roles: [Role.ADMIN, Role.GESTOR] },
          { id: 'admin-settings', label: 'Gestão Informações', icon: Settings, roles: [Role.ADMIN] },
          { id: 'admin-resend', label: 'Disparo de E-mails', icon: Mail, roles: [Role.ADMIN] },
       ]
