@@ -10,19 +10,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 
 interface AdminProfessorDetailsModalProps {
-=======
-import { User, RegistrationStatus, Role } from '../types';
-import { supabase } from '../lib/supabase';
-import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
-import { modalLabelClass, modalInputClass } from './AdminShared';
-import { useToast } from '../context/ToastContext';
-import { userService } from '../services/userService';
-import { useQueryClient } from '@tanstack/react-query';
-import { useAuth } from '../context/AuthContext';
-
-interface AdminProfessorDetailsModalProps {
->>>>>>> REPLACE
-
     isOpen: boolean;
     onClose: () => void;
     professorId: string | null;
@@ -36,14 +23,6 @@ export const AdminProfessorDetailsModal: React.FC<AdminProfessorDetailsModalProp
     const { user: requester } = useAuth();
     const { addToast } = useToast();
     const queryClient = useQueryClient();
-=======
-    onClose,
-    professorId
-}) => {
-    const { user: requester } = useAuth();
-    const { addToast } = useToast();
-    const queryClient = useQueryClient();
->>>>>>> REPLACE
 
     const [downloadingUrl, setDownloadingUrl] = useState<string | null>(null);
     
@@ -378,53 +357,6 @@ export const AdminProfessorDetailsModal: React.FC<AdminProfessorDetailsModalProp
                             )}
                         </div>
                     </>
-=======
-                                Fechar Detalhes
-                            </button>
-
-                            {requester?.role !== Role.GESTOR && (
-                                <>
-                                    {!showDeleteConfirm ? (
-                                        <button
-                                            onClick={() => setShowDeleteConfirm(true)}
-                                            className="w-full py-4 text-red-500 font-black uppercase text-[10px] tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10 rounded-2xl transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <Trash2 size={14}/> Excluir Conta do Professor
-                                        </button>
-                                    ) : (
-                                        <div className="p-6 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-3xl animate-fadeIn">
-                                            <div className="flex items-center gap-3 mb-4 text-red-600">
-                                                <AlertTriangle size={24}/>
-                                                <h4 className="font-black uppercase text-xs tracking-widest">Confirma a exclusão?</h4>
-                                            </div>
-                                            <p className="text-xs text-red-700 dark:text-red-400 mb-4 font-medium leading-relaxed">
-                                                Ao excluir este professor, todas as suas academias vinculadas e o acesso do usuário serão removidos permanentemente.
-                                            </p>
-                                            <div className="flex gap-3">
-                                                <button
-                                                    onClick={() => setShowDeleteConfirm(false)}
-                                                    disabled={isDeleting}
-                                                    className="flex-1 py-3 bg-white dark:bg-slate-800 text-gray-500 font-black uppercase text-[10px] rounded-xl border border-red-100"
-                                                >
-                                                    Cancelar
-                                                </button>
-                                                <button
-                                                    onClick={handleDeleteProfessor}
-                                                    disabled={isDeleting}
-                                                    className="flex-1 py-3 bg-red-600 text-white font-black uppercase text-[10px] rounded-xl shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
-                                                >
-                                                    {isDeleting ? <Loader2 size={14} className="animate-spin"/> : <Trash2 size={14}/>}
-                                                    Sim, Excluir
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    </>
->>>>>>> REPLACE
-
                 ) : (
                     <div className="py-20 text-center">
                         <AlertCircle size={48} className="text-red-500 mx-auto mb-4" />

@@ -11,18 +11,6 @@ import { userService } from '../services/userService';
 import { useAuth } from '../context/AuthContext';
 
 interface AdminAthleteDetailsModalProps {
-=======
-import { User, DocumentStatus, PaymentStatus, Role } from '../types';
-import { modalLabelClass, modalInputClass } from './AdminShared';
-import { AthleteFullDataAccordion } from './admin/AthleteFullDataAccordion';
-import { supabase } from '../lib/supabase';
-import { useToast } from '../context/ToastContext';
-import { userService } from '../services/userService';
-import { useAuth } from '../context/AuthContext';
-
-interface AdminAthleteDetailsModalProps {
->>>>>>> REPLACE
-
     isOpen: boolean;
     onClose: () => void;
     user: User | null;
@@ -40,15 +28,6 @@ export const AdminAthleteDetailsModal: React.FC<AdminAthleteDetailsModalProps> =
     const { user: requester } = useAuth();
     const { addToast } = useToast();
     const [isEditingId, setIsEditingId] = useState(false);
-=======
-export const AdminAthleteDetailsModal: React.FC<AdminAthleteDetailsModalProps> = ({
-    isOpen, onClose, user, onApproveDoc, onRejectDoc, onMarkAsPaid, onUpdateFederationId, onApproveFederation, processingId
-}) => {
-    const { user: requester } = useAuth();
-    const { addToast } = useToast();
-    const [isEditingId, setIsEditingId] = useState(false);
->>>>>>> REPLACE
-
     const [tempId, setTempId] = useState('');
     const [downloadingUrl, setDownloadingUrl] = useState<string | null>(null);
     
@@ -113,8 +92,7 @@ export const AdminAthleteDetailsModal: React.FC<AdminAthleteDetailsModalProps> =
             await userService.deleteUser(user.id);
             addToast('success', "Atleta excluído permanentemente.");
             onClose();
-            // O refetch ocorrerá na página pai devido ao fechamento e fluxo de navegação/query invalidation se necessário
-            window.location.reload(); // Recarrega para limpar estado e listas globais
+            window.location.reload(); 
         } catch (err: any) {
             addToast('error', "Erro ao excluir atleta.");
         } finally {
@@ -163,7 +141,7 @@ export const AdminAthleteDetailsModal: React.FC<AdminAthleteDetailsModalProps> =
                         {user.isDependent && <div className="absolute -bottom-2 -right-2 bg-indigo-600 text-white p-1 md:p-1.5 rounded-xl border-4 border-white dark:border-slate-800"><Baby size={14}/></div>}
                     </div>
                     <div>
-                        <h3 className="text-xl md:text-2xl font-black dark:text-white leading-tight tracking-tight">{user.fullName}</h3>
+                        <h3 className="text-xl md:text-2xl font-black dark:text-white tracking-tight leading-tight">{user.fullName}</h3>
                         {user.isDependent ? (
                             <p className="text-indigo-600 font-bold text-xs md:text-sm uppercase tracking-tight flex items-center justify-center gap-1 mt-1"><Award size={14}/> Resp: {user.parentName}</p>
                         ) : (
@@ -402,53 +380,5 @@ export const AdminAthleteDetailsModal: React.FC<AdminAthleteDetailsModalProps> =
                 </div>
             </div>
         </div>
-=======
-                        Fechar Detalhes
-                    </button>
-
-                    {requester?.role !== Role.GESTOR && (
-                        <>
-                            {!showDeleteConfirm ? (
-                                <button
-                                    onClick={() => setShowDeleteConfirm(true)}
-                                    className="w-full py-4 text-red-500 font-black uppercase text-[10px] tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10 rounded-2xl transition-all flex items-center justify-center gap-2"
-                                >
-                                    <Trash2 size={14}/> Excluir Conta do Atleta
-                                </button>
-                            ) : (
-                                <div className="p-6 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-3xl animate-fadeIn">
-                                    <div className="flex items-center gap-3 mb-4 text-red-600">
-                                        <AlertTriangle size={24}/>
-                                        <h4 className="font-black uppercase text-xs tracking-widest">Confirma a exclusão?</h4>
-                                    </div>
-                                    <p className="text-xs text-red-700 dark:text-red-400 mb-4 font-medium leading-relaxed">
-                                        Esta ação é irreversível. Todos os dados do atleta, histórico e documentos serão removidos do sistema permanentemente.
-                                    </p>
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={() => setShowDeleteConfirm(false)}
-                                            disabled={isDeleting}
-                                            className="flex-1 py-3 bg-white dark:bg-slate-800 text-gray-500 font-black uppercase text-[10px] rounded-xl border border-red-100"
-                                        >
-                                            Cancelar
-                                        </button>
-                                        <button
-                                            onClick={handleDeleteAthlete}
-                                            disabled={isDeleting}
-                                            className="flex-1 py-3 bg-red-600 text-white font-black uppercase text-[10px] rounded-xl shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
-                                        >
-                                            {isDeleting ? <Loader2 size={14} className="animate-spin"/> : <Trash2 size={14}/>}
-                                            Sim, Excluir
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
-            </div>
-        </div>
->>>>>>> REPLACE
-
     );
 };

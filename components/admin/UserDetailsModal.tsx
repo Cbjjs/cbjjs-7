@@ -7,17 +7,6 @@ import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 
 interface UserDetailsModalProps {
-=======
-import { X, Mail, User as UserIcon, KeyRound, Loader2, Save, Fingerprint, Calendar, Copy, Check, Trash2, AlertTriangle } from 'lucide-react';
-import { User, Role } from '../../types';
-import { modalLabelClass, modalInputClass } from '../AdminShared';
-import { formatDateBR } from '../../utils/formatters';
-import { useToast } from '../../context/ToastContext';
-import { useAuth } from '../../context/AuthContext';
-
-interface UserDetailsModalProps {
->>>>>>> REPLACE
-
   user: User | null;
   onClose: () => void;
   newPassword: string;
@@ -39,18 +28,6 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
   if (!user) return null;
 
   const isGestor = requester?.role === Role.GESTOR;
-=======
-  user, onClose, newPassword, setNewPassword, isSubmitting, isDeleting, onUpdatePassword, onDeleteUser
-}) => {
-  const { user: requester } = useAuth();
-  const { addToast } = useToast();
-  const [copied, setCopied] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  if (!user) return null;
-
-  const isGestor = requester?.role === Role.GESTOR;
->>>>>>> REPLACE
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(user.email);
@@ -166,7 +143,7 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
             {!isGestor && (
               <>
                 {!showDeleteConfirm ? (
-                    <button
+                    <button 
                         onClick={() => setShowDeleteConfirm(true)}
                         className="w-full py-4 text-red-500 font-black uppercase text-[10px] tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10 rounded-2xl transition-all flex items-center justify-center gap-2"
                     >
@@ -182,14 +159,14 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
                             Esta ação é irreversível. Todos os dados do atleta, histórico e documentos serão removidos do sistema.
                         </p>
                         <div className="flex gap-3">
-                            <button
+                            <button 
                                 onClick={() => setShowDeleteConfirm(false)}
                                 disabled={isDeleting}
                                 className="flex-1 py-3 bg-white dark:bg-slate-800 text-gray-500 font-black uppercase text-[10px] rounded-xl border border-red-100"
                             >
                                 Cancelar
                             </button>
-                            <button
+                            <button 
                                 onClick={() => onDeleteUser(user.id)}
                                 disabled={isDeleting}
                                 className="flex-1 py-3 bg-red-600 text-white font-black uppercase text-[10px] rounded-xl shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
@@ -205,54 +182,6 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
           </div>
         </div>
       </div>
-=======
-                Fechar Detalhes
-            </button>
-
-            {!isGestor && (
-              <>
-                {!showDeleteConfirm ? (
-                    <button
-                        onClick={() => setShowDeleteConfirm(true)}
-                        className="w-full py-4 text-red-500 font-black uppercase text-[10px] tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10 rounded-2xl transition-all flex items-center justify-center gap-2"
-                    >
-                        <Trash2 size={14}/> Excluir Conta permanentemente
-                    </button>
-                ) : (
-                    <div className="p-6 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-3xl animate-fadeIn">
-                        <div className="flex items-center gap-3 mb-4 text-red-600">
-                            <AlertTriangle size={24}/>
-                            <h4 className="font-black uppercase text-xs tracking-widest">Confirma a exclusão?</h4>
-                        </div>
-                        <p className="text-xs text-red-700 dark:text-red-400 mb-4 font-medium leading-relaxed">
-                            Esta ação é irreversível. Todos os dados do atleta, histórico e documentos serão removidos do sistema.
-                        </p>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setShowDeleteConfirm(false)}
-                                disabled={isDeleting}
-                                className="flex-1 py-3 bg-white dark:bg-slate-800 text-gray-500 font-black uppercase text-[10px] rounded-xl border border-red-100"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={() => onDeleteUser(user.id)}
-                                disabled={isDeleting}
-                                className="flex-1 py-3 bg-red-600 text-white font-black uppercase text-[10px] rounded-xl shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
-                            >
-                                {isDeleting ? <Loader2 size={14} className="animate-spin"/> : <Trash2 size={14}/>}
-                                Sim, Excluir
-                            </button>
-                        </div>
-                    </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
->>>>>>> REPLACE
-
     </div>
   );
 };
