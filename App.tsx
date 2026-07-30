@@ -93,8 +93,8 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated && user) {
-        const gestorPages = ['admin-users', 'admin-academies', 'admin-certificates'];
-        const adminOnlyPages = ['admin-team', 'admin-professors', 'admin-events', 'admin-settings', 'admin-id-cards', 'admin-all-users', 'admin-event-access', 'admin-contacts', 'admin-resend'];
+        const gestorPages = ['admin-users', 'admin-academies', 'admin-certificates', 'admin-event-access', 'admin-all-users'];
+        const adminOnlyPages = ['admin-team', 'admin-professors', 'admin-events', 'admin-settings', 'admin-id-cards', 'admin-contacts', 'admin-resend'];
         
         const isGestorPage = gestorPages.includes(currentPage);
         const isAdminOnlyPage = adminOnlyPages.includes(currentPage);
@@ -139,7 +139,7 @@ const AppContent: React.FC = () => {
       case 'my-dependents': return <MyDependents />;
       case 'students': return <MyStudents />;
       case 'admin-team': return user?.role === Role.ADMIN ? <AdminTeam /> : <Dashboard />;
-      case 'admin-event-access': return user?.role === Role.ADMIN ? <AdminEventAccess /> : <Dashboard />;
+      case 'admin-event-access': return (user?.role === Role.ADMIN || user?.role === Role.GESTOR) ? <AdminEventAccess /> : <Dashboard />;
       case 'admin-contacts': return user?.role === Role.ADMIN ? <AdminContactManagement /> : <Dashboard />;
       case 'admin-users': return (user?.role === Role.ADMIN || user?.role === Role.GESTOR) ? <AdminPanel view="users" /> : <Dashboard />;
       case 'admin-professors': return user?.role === Role.ADMIN ? <AdminPanel view="professors" /> : <Dashboard />;
@@ -150,7 +150,7 @@ const AppContent: React.FC = () => {
       case 'admin-events': return user?.role === Role.ADMIN ? <AdminPanel view="events" /> : <Dashboard />;
       case 'admin-settings': return user?.role === Role.ADMIN ? <AdminPanel view="settings" /> : <Dashboard />;
       case 'admin-resend': return user?.role === Role.ADMIN ? <AdminResend /> : <Dashboard />;
-      case 'admin-all-users': return user?.role === Role.ADMIN ? <AdminPanel view="all-users" /> : <Dashboard />;
+      case 'admin-all-users': return (user?.role === Role.ADMIN || user?.role === Role.GESTOR) ? <AdminPanel view="all-users" /> : <Dashboard />;
       default: return <Dashboard />;
     }
   };

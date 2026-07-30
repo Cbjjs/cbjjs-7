@@ -2,14 +2,27 @@
 
 import React, { useState } from 'react';
 import { X, FileText, ExternalLink, AlertTriangle, Loader2, CheckCircle, Edit, Camera, CreditCard, Award, Baby, KeyRound, Save, Download, Trash2 } from 'lucide-react';
-import { User, DocumentStatus, PaymentStatus } from '../types';
+import { User, DocumentStatus, PaymentStatus, Role } from '../types';
 import { modalLabelClass, modalInputClass } from './AdminShared';
 import { AthleteFullDataAccordion } from './admin/AthleteFullDataAccordion';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
 import { userService } from '../services/userService';
+import { useAuth } from '../context/AuthContext';
 
 interface AdminAthleteDetailsModalProps {
+=======
+import { User, DocumentStatus, PaymentStatus, Role } from '../types';
+import { modalLabelClass, modalInputClass } from './AdminShared';
+import { AthleteFullDataAccordion } from './admin/AthleteFullDataAccordion';
+import { supabase } from '../lib/supabase';
+import { useToast } from '../context/ToastContext';
+import { userService } from '../services/userService';
+import { useAuth } from '../context/AuthContext';
+
+interface AdminAthleteDetailsModalProps {
+>>>>>>> REPLACE
+
     isOpen: boolean;
     onClose: () => void;
     user: User | null;
@@ -24,8 +37,18 @@ interface AdminAthleteDetailsModalProps {
 export const AdminAthleteDetailsModal: React.FC<AdminAthleteDetailsModalProps> = ({
     isOpen, onClose, user, onApproveDoc, onRejectDoc, onMarkAsPaid, onUpdateFederationId, onApproveFederation, processingId
 }) => {
+    const { user: requester } = useAuth();
     const { addToast } = useToast();
     const [isEditingId, setIsEditingId] = useState(false);
+=======
+export const AdminAthleteDetailsModal: React.FC<AdminAthleteDetailsModalProps> = ({
+    isOpen, onClose, user, onApproveDoc, onRejectDoc, onMarkAsPaid, onUpdateFederationId, onApproveFederation, processingId
+}) => {
+    const { user: requester } = useAuth();
+    const { addToast } = useToast();
+    const [isEditingId, setIsEditingId] = useState(false);
+>>>>>>> REPLACE
+
     const [tempId, setTempId] = useState('');
     const [downloadingUrl, setDownloadingUrl] = useState<string | null>(null);
     
@@ -337,43 +360,95 @@ export const AdminAthleteDetailsModal: React.FC<AdminAthleteDetailsModalProps> =
                         Fechar Detalhes
                     </button>
 
-                    {!showDeleteConfirm ? (
-                        <button 
-                            onClick={() => setShowDeleteConfirm(true)}
-                            className="w-full py-4 text-red-500 font-black uppercase text-[10px] tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10 rounded-2xl transition-all flex items-center justify-center gap-2"
-                        >
-                            <Trash2 size={14}/> Excluir Conta do Atleta
-                        </button>
-                    ) : (
-                        <div className="p-6 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-3xl animate-fadeIn">
-                            <div className="flex items-center gap-3 mb-4 text-red-600">
-                                <AlertTriangle size={24}/>
-                                <h4 className="font-black uppercase text-xs tracking-widest">Confirma a exclusão?</h4>
-                            </div>
-                            <p className="text-xs text-red-700 dark:text-red-400 mb-4 font-medium leading-relaxed">
-                                Esta ação é irreversível. Todos os dados do atleta, histórico e documentos serão removidos do sistema permanentemente.
-                            </p>
-                            <div className="flex gap-3">
-                                <button 
-                                    onClick={() => setShowDeleteConfirm(false)}
-                                    disabled={isDeleting}
-                                    className="flex-1 py-3 bg-white dark:bg-slate-800 text-gray-500 font-black uppercase text-[10px] rounded-xl border border-red-100"
+                    {requester?.role !== Role.GESTOR && (
+                        <>
+                            {!showDeleteConfirm ? (
+                                <button
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="w-full py-4 text-red-500 font-black uppercase text-[10px] tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10 rounded-2xl transition-all flex items-center justify-center gap-2"
                                 >
-                                    Cancelar
+                                    <Trash2 size={14}/> Excluir Conta do Atleta
                                 </button>
-                                <button 
-                                    onClick={handleDeleteAthlete}
-                                    disabled={isDeleting}
-                                    className="flex-1 py-3 bg-red-600 text-white font-black uppercase text-[10px] rounded-xl shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
-                                >
-                                    {isDeleting ? <Loader2 size={14} className="animate-spin"/> : <Trash2 size={14}/>}
-                                    Sim, Excluir
-                                </button>
-                            </div>
-                        </div>
+                            ) : (
+                                <div className="p-6 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-3xl animate-fadeIn">
+                                    <div className="flex items-center gap-3 mb-4 text-red-600">
+                                        <AlertTriangle size={24}/>
+                                        <h4 className="font-black uppercase text-xs tracking-widest">Confirma a exclusão?</h4>
+                                    </div>
+                                    <p className="text-xs text-red-700 dark:text-red-400 mb-4 font-medium leading-relaxed">
+                                        Esta ação é irreversível. Todos os dados do atleta, histórico e documentos serão removidos do sistema permanentemente.
+                                    </p>
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={() => setShowDeleteConfirm(false)}
+                                            disabled={isDeleting}
+                                            className="flex-1 py-3 bg-white dark:bg-slate-800 text-gray-500 font-black uppercase text-[10px] rounded-xl border border-red-100"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            onClick={handleDeleteAthlete}
+                                            disabled={isDeleting}
+                                            className="flex-1 py-3 bg-red-600 text-white font-black uppercase text-[10px] rounded-xl shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
+                                        >
+                                            {isDeleting ? <Loader2 size={14} className="animate-spin"/> : <Trash2 size={14}/>}
+                                            Sim, Excluir
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
         </div>
+=======
+                        Fechar Detalhes
+                    </button>
+
+                    {requester?.role !== Role.GESTOR && (
+                        <>
+                            {!showDeleteConfirm ? (
+                                <button
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="w-full py-4 text-red-500 font-black uppercase text-[10px] tracking-widest hover:bg-red-50 dark:hover:bg-red-900/10 rounded-2xl transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Trash2 size={14}/> Excluir Conta do Atleta
+                                </button>
+                            ) : (
+                                <div className="p-6 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-3xl animate-fadeIn">
+                                    <div className="flex items-center gap-3 mb-4 text-red-600">
+                                        <AlertTriangle size={24}/>
+                                        <h4 className="font-black uppercase text-xs tracking-widest">Confirma a exclusão?</h4>
+                                    </div>
+                                    <p className="text-xs text-red-700 dark:text-red-400 mb-4 font-medium leading-relaxed">
+                                        Esta ação é irreversível. Todos os dados do atleta, histórico e documentos serão removidos do sistema permanentemente.
+                                    </p>
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={() => setShowDeleteConfirm(false)}
+                                            disabled={isDeleting}
+                                            className="flex-1 py-3 bg-white dark:bg-slate-800 text-gray-500 font-black uppercase text-[10px] rounded-xl border border-red-100"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            onClick={handleDeleteAthlete}
+                                            disabled={isDeleting}
+                                            className="flex-1 py-3 bg-red-600 text-white font-black uppercase text-[10px] rounded-xl shadow-lg shadow-red-500/20 flex items-center justify-center gap-2"
+                                        >
+                                            {isDeleting ? <Loader2 size={14} className="animate-spin"/> : <Trash2 size={14}/>}
+                                            Sim, Excluir
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+>>>>>>> REPLACE
+
     );
 };

@@ -33,8 +33,8 @@ Deno.serve(async (req) => {
       .eq('id', requester.id)
       .single()
 
-    if (profile?.role !== 'ADMIN') {
-      throw new Error("Apenas administradores podem realizar esta ação")
+    if (profile?.role !== 'ADMIN' && profile?.role !== 'GESTOR') {
+      throw new Error("Apenas administradores e gestores podem realizar esta ação")
     }
 
     // 2. Alterar a senha do usuário alvo usando o Admin API
