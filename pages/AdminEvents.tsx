@@ -10,6 +10,27 @@ interface ExtendedEvent extends Event {
     startDate?: string;
 }
 
+const EVENT_CATEGORIES = ['Gi', 'NoGi', 'MMA'] as const;
+type EventCategory = typeof EVENT_CATEGORIES[number];
+
+const getSelectedCategories = (category?: string): EventCategory[] => {
+    if (!category) return [];
+
+    return EVENT_CATEGORIES.filter(option => {
+        if (option === 'Gi') return /(^|[^A-Za-z])Gi([^A-Za-z]|$)/i.test(category);
+        return category.toLowerCase().includes(option.toLowerCase());
+    });
+};
+
+const formatCategories = (categories: EventCategory[]): string => {
+    const selectedCategories = EVENT_CATEGORIES.filter(category => categories.includes(category));
+
+    if (selectedCategories.length === 1) return selectedCategories[0];
+    if (selectedCategories.length === 2) return selectedCategories.join(' & ');
+    if (selectedCategories.length === 3) return 'Gi, NoGi & MMA';
+    return '';
+};
+
 export const AdminEvents: React.FC = () => {
   const { addToast } = useToast();
   const [editingEvent, setEditingEvent] = useState<Partial<ExtendedEvent> | null>(null);
@@ -75,6 +96,12 @@ export const AdminEvents: React.FC = () => {
   };
 
   const handleSaveEvent = async () => {
+      const selectedCategories = getSelectedCategories(editingEvent?.category);
+      if (selectedCategories.length === 0) {
+          addToast('error', "Selecione pelo menos uma categoria.");
+          return;
+      }
+
       if (!editingEvent?.name || !editingEvent?.date || !editingEvent?.month || !editingEvent?.startDate) {
           addToast('error', "Nome, Dia, Mês e Data de Início são obrigatórios.");
           return;
@@ -90,7 +117,7 @@ export const AdminEvents: React.FC = () => {
               registration_link: editingEvent.registrationLink,
               image_url: editingEvent.imageUrl,
               start_date: editingEvent.startDate,
-              category: editingEvent.category
+              category: formatCategories(selectedCategories)
           };
 
           if (editingEvent.id) {
@@ -192,17 +219,33 @@ export const AdminEvents: React.FC = () => {
 
                           <div>
                               <label className={modalLabelClass}>Categoria de Luta</label>
-                              <div className="relative">
-                                  <Award className="absolute left-3 top-2.5 text-gray-400" size={18}/>
-                                  <select 
-                                    className={`${modalInputClass} pl-10`} 
-                                    value={editingEvent.category || 'Gi & NoGi'} 
-                                    onChange={e => setEditingEvent({...editingEvent, category: e.target.value})}
-                                  >
-                                      <option value="Gi & NoGi">Gi & NoGi (Kimono e Sem Kimono)</option>
-                                      <option value="Gi">Gi (Kimono)</option>
-                                      <option value="NoGi">NoGi (Sem Kimono)</option>
-                                  </select>
+                              <div className="flex items-center gap-2">
+                                  <Award className="shrink-0 text-gray-400" size={18}/>
+                                  <div className="grid grid-cols-3 gap-2 flex-1">
+                                      {EVENT_CATEGORIES.map(category => {
+                                          const isSelected = getSelectedCategories(editingEvent.category).includes(category);
+                                          return (
+                                              <button
+                                                key={category}
+                                                type="button"
+                                                aria-pressed={isSelected}
+                                                onClick={() => {
+                                                    const selectedCategories = getSelectedCategories(editingEvent.category);
+                                                    const nextCategories = selectedCategories.includes(category)
+                                                        ? selectedCategories.filter(selected => selected !== category)
+                                                        : [...selectedCategories, category];
+                                                    setEditingEvent({ ...editingEvent, category: formatCategories(nextCategories) });
+                                                }}
+                                                className={`py-3 rounded-xl border font-black text-xs transition-all ${isSelected
+                                                    ? 'bg-cbjjs-blue border-cbjjs-blue text-white shadow-md shadow-blue-500/20'
+                                                    : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-600 text-gray-500 hover:border-cbjjs-blue hover:text-cbjjs-blue'
+                                                }`}
+                                              >
+                                                  {category}
+                                              </button>
+                                          );
+                                      })}
+                                  </div>
                               </div>
                           </div>
                           
