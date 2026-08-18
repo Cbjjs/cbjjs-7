@@ -39,6 +39,9 @@ export const AthleteFullDataAccordion: React.FC<AthleteFullDataAccordionProps> =
                             <p className="font-bold text-sm dark:text-white flex items-center gap-2">
                                 <School size={14} className="text-cbjjs-blue"/> {user.academy?.name || 'Não informada'}
                             </p>
+                            <p className="text-xs text-gray-500 font-medium pl-6">
+                                Registro: {user.academy?.federationId || 'Não informado'}
+                            </p>
                         </div>
                         <div>
                             <span className={modalLabelClass}>Data de Nascimento</span>

@@ -172,8 +172,9 @@ export interface User {
   academy?: {
     isOwner: boolean;
     name: string;
+    federationId?: string;
     phone?: string;
-    address?: string; 
+    address?: string;
     status: RegistrationStatus;
   };
 

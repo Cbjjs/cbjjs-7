@@ -34,17 +34,28 @@ export const athleteService = {
 
     const [resProfiles, resDependents] = await Promise.all([qProfiles, qDependents]);
 
-    const { data: academies } = await supabase.from('academies').select('id, name');
-    const academyMap = (academies || []).reduce((acc: any, curr) => { acc[curr.id] = curr.name; return acc; }, {});
+    const { data: academies } = await supabase.from('academies').select('id, name, federation_id');
+    const academyMap = (academies || []).reduce((acc: any, curr) => {
+      acc[curr.id] = { name: curr.name, federationId: curr.federation_id ? String(curr.federation_id) : undefined };
+      return acc;
+    }, {});
 
     const mappedAtletas = (resProfiles.data || []).map(p => ({
         ...this.mapRawToUser(p, false),
-        academy: { status: RegistrationStatus.APPROVED, name: academyMap[p.academy_id] || 'Não informada' }
+        academy: {
+          status: RegistrationStatus.APPROVED,
+          name: academyMap[p.academy_id]?.name || 'Não informada',
+          federationId: academyMap[p.academy_id]?.federationId
+        }
     }));
 
     const mappedDependents = (resDependents.data || []).map(d => ({
         ...this.mapRawToUser(d, true),
-        academy: { status: RegistrationStatus.APPROVED, name: academyMap[d.academy_id] || 'Não informada' }
+        academy: {
+          status: RegistrationStatus.APPROVED,
+          name: academyMap[d.academy_id]?.name || 'Não informada',
+          federationId: academyMap[d.academy_id]?.federationId
+        }
     }));
 
     const allMapped = [...mappedAtletas, ...mappedDependents];
