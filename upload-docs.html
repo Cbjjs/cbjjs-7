@@ -117,11 +117,12 @@
 
                 const { data: academy, error } = await _supabase
                     .from('academies')
-                    .select('name, certificate_url, identity_url')
+                    .select('name, owner_id, certificate_url, identity_url')
                     .eq('id', academyId)
                     .single();
 
                 if (error) throw error;
+                if (!academy || academy.owner_id !== session.user.id) throw new Error('Você não tem permissão para esta academia.');
 
                 if (academy) {
                     document.getElementById('academy-name').innerText = academy.name;

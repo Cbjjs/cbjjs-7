@@ -132,7 +132,7 @@ export const AdminProfessorDetailsModal: React.FC<AdminProfessorDetailsModalProp
 
     const isImage = (url?: string) => {
         if (!url) return false;
-        return url.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+        return url.split('?')[0].match(/\.(jpeg|jpg|gif|png|webp)$/i);
     };
 
     const handleDownload = async (url: string, filename: string) => {
