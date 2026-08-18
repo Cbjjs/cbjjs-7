@@ -38,8 +38,8 @@ export const AdminEventAccess: React.FC = () => {
 
       if (resP.error) return { data: null, error: resP.error };
 
-      const mappedP = (resP.data || []).map(p => athleteService.mapRawToUser(p, false));
-      const mappedD = (resD.data || []).map(d => athleteService.mapRawToUser(d, true));
+      const mappedP = await Promise.all((resP.data || []).map(p => athleteService.mapRawToUserWithSignedUrls(p, false)));
+      const mappedD = await Promise.all((resD.data || []).map(d => athleteService.mapRawToUserWithSignedUrls(d, true)));
 
       const combined = [...mappedP, ...mappedD].sort((a, b) => a.fullName.localeCompare(b.fullName));
       

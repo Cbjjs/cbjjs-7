@@ -194,6 +194,7 @@
             try {
                 const { data: { session } } = await _supabase.auth.getSession();
                 if (!session) { window.location.href = '/'; return; }
+                if (session.user.id !== userId) { window.location.href = '/'; return; }
                 const { data: profile } = await _supabase.from('profiles').select('*').eq('id', userId).single();
                 if (profile) {
                     document.getElementById('user-name').innerText = profile.full_name || 'Atleta';
@@ -231,24 +232,24 @@
                 const fileExt = file.name.split('.').pop().toLowerCase();
                 const fileName = `${type}_${userId}_${Date.now()}.${fileExt}`;
                 const folder = type === 'profile' ? 'avatars' : 'documents';
+                const path = `${userId}/${fileName}`;
                 
-                const { error } = await _supabase.storage.from(folder).upload(`${userId}/${fileName}`, file, { upsert: true });
+                const { error } = await _supabase.storage.from(folder).upload(path, file, { upsert: true });
                 if (error) throw error;
-                
-                const { data: { publicUrl } } = _supabase.storage.from(folder).getPublicUrl(`${userId}/${fileName}`);
                 
                 let dbUpdates = {};
                 if (type === 'profile') {
-                    dbUpdates = { profile_image_url: publicUrl, doc_profile_status: 'PENDING' };
+                    dbUpdates = { profile_image_url: path, doc_profile_status: 'PENDING' };
                 } else if (type === 'identity') {
-                    dbUpdates = { doc_identity_url: publicUrl, doc_identity_status: 'PENDING' };
+                    dbUpdates = { doc_identity_url: path, doc_identity_status: 'PENDING' };
                 } else if (type === 'medical') {
-                    dbUpdates = { doc_medical_url: publicUrl, doc_medical_status: 'PENDING' };
+                    dbUpdates = { doc_medical_url: path, doc_medical_status: 'PENDING' };
                 } else if (type === 'belt') {
-                    dbUpdates = { doc_belt_url: publicUrl, doc_belt_status: 'PENDING' };
+                    dbUpdates = { doc_belt_url: path, doc_belt_status: 'PENDING' };
                 }
                 
-                await _supabase.from('profiles').update(dbUpdates).eq('id', userId);
+                const { error: updateError } = await _supabase.from('profiles').update(dbUpdates).eq('id', userId);
+                if (updateError) throw updateError;
                 
                 markAsDone(type);
                 uploadsCount++;
@@ -274,7 +275,8 @@
             const overlay = document.getElementById('loading-overlay');
             overlay.classList.add('active');
             try {
-                await _supabase.from('profiles').update({ is_boarding_complete: true }).eq('id', userId);
+                const { error: updateError } = await _supabase.from('profiles').update({ is_boarding_complete: true }).eq('id', userId);
+                if (updateError) throw updateError;
                 window.location.href = '/?show_payment=true';
             } catch (err) { alert(err.message); } finally { overlay.classList.remove('active'); }
         }

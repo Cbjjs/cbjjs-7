@@ -9,6 +9,7 @@ import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { IDCardView } from '../components/id-card/IDCardView';
 import { MembershipBenefits } from '../components/id-card/MembershipBenefits';
 import { PrintPreviewModal } from '../components/admin/id-cards/PrintPreviewModal';
+import { createSignedStorageUrl } from '../utils/storage';
 
 interface MyIDCardProps {
   onNavigate?: (page: string) => void;
@@ -29,15 +30,15 @@ export const MyIDCard: React.FC<MyIDCardProps> = ({ onNavigate }) => {
 
         if (error) return { data: null, error };
         
-        const mapped = (data || []).map((d: any) => ({
+        const mapped = await Promise.all((data || []).map(async (d: any) => ({
             ...d,
             fullName: d.full_name,
             dob: d.dob,
             federationId: d.federation_id,
-            profileImageUrl: d.profile_image_url,
+            profileImageUrl: await createSignedStorageUrl(d.profile_image_url, 'avatars'),
             paymentConfirmedAt: d.payment_confirmed_at,
             belt: d.belt as Belt
-        }));
+        })));
 
         return { data: mapped as any, error: null };
     },

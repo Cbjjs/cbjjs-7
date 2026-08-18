@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { User, Role, PaymentStatus } from '../types';
+import { createSignedStorageUrl } from '../utils/storage';
 
 export const userService = {
   async getAllUsers(params: { searchTerm: string, page: number, pageSize: number }) {
@@ -22,7 +23,7 @@ export const userService = {
 
         if (error) throw error;
 
-        const mapped = (data || []).map(p => ({
+        const mapped = await Promise.all((data || []).map(async p => ({
           id: p.id,
           fullName: p.full_name || 'Usuário Sem Nome',
           email: p.email,
@@ -30,13 +31,13 @@ export const userService = {
           phone: p.phone, // Mapeamento do telefone adicionado
           role: p.role as Role,
           isBoardingComplete: !!p.is_boarding_complete,
-          profileImage: p.profile_image_url,
+          profileImage: await createSignedStorageUrl(p.profile_image_url, 'avatars'),
           federationId: p.federation_id,
           paymentStatus: (p.payment_status as PaymentStatus) || PaymentStatus.PENDING,
           cpf: p.cpf,
           registrationDate: p.created_at,
           academy: (p as any).academies ? { name: (p as any).academies.name } : undefined
-        }));
+        })));
 
         return { data: mapped as any, total: count || 0 };
     } catch (err: any) {

@@ -82,8 +82,8 @@ export const idCardService = {
       supabase.from('dependents').select('*').eq('academy_id', academyId).eq('academy_status', RegistrationStatus.APPROVED)
     ]);
 
-    const mappedProfiles = (resProfiles.data || []).map(p => athleteService.mapRawToUser(p, false));
-    const mappedDependents = (resDependents.data || []).map(d => athleteService.mapRawToUser(d, true));
+    const mappedProfiles = await Promise.all((resProfiles.data || []).map(p => athleteService.mapRawToUserWithSignedUrls(p, false)));
+    const mappedDependents = await Promise.all((resDependents.data || []).map(d => athleteService.mapRawToUserWithSignedUrls(d, true)));
 
     const allAthletes = [...mappedProfiles, ...mappedDependents];
 

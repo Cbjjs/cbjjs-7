@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { User, Role, DocumentStatus, PaymentStatus, RegistrationStatus, Belt } from '../types';
+import { createSignedStorageUrl } from '../utils/storage';
 
 /**
  * REGRA DE NEGÓCIO OFICIAL CBJJS - CENTRALIZADA
@@ -40,23 +41,23 @@ export const athleteService = {
       return acc;
     }, {});
 
-    const mappedAtletas = (resProfiles.data || []).map(p => ({
-        ...this.mapRawToUser(p, false),
+    const mappedAtletas = await Promise.all((resProfiles.data || []).map(async p => ({
+        ...await this.mapRawToUserWithSignedUrls(p, false),
         academy: {
           status: RegistrationStatus.APPROVED,
           name: academyMap[p.academy_id]?.name || 'Não informada',
           federationId: academyMap[p.academy_id]?.federationId
         }
-    }));
+    })));
 
-    const mappedDependents = (resDependents.data || []).map(d => ({
-        ...this.mapRawToUser(d, true),
+    const mappedDependents = await Promise.all((resDependents.data || []).map(async d => ({
+        ...await this.mapRawToUserWithSignedUrls(d, true),
         academy: {
           status: RegistrationStatus.APPROVED,
           name: academyMap[d.academy_id]?.name || 'Não informada',
           federationId: academyMap[d.academy_id]?.federationId
         }
-    }));
+    })));
 
     const allMapped = [...mappedAtletas, ...mappedDependents];
 
@@ -166,6 +167,16 @@ export const athleteService = {
         belt: { status: data.doc_belt_status || DocumentStatus.MISSING, url: data.doc_belt_url, rejectionReason: data.doc_belt_reason }
       }
     };
+  },
+
+  async mapRawToUserWithSignedUrls(data: any, isDependent: boolean): Promise<User> {
+    const user = this.mapRawToUser(data, isDependent);
+    user.profileImage = await createSignedStorageUrl(data.profile_image_url, 'avatars');
+    user.documents.identity.url = await createSignedStorageUrl(data.doc_identity_url, 'documents');
+    if (user.documents.medical) user.documents.medical.url = await createSignedStorageUrl(data.doc_medical_url, 'documents');
+    if (user.documents.profile) user.documents.profile.url = user.profileImage;
+    if (user.documents.belt) user.documents.belt.url = await createSignedStorageUrl(data.doc_belt_url, 'documents');
+    return user;
   },
 
   async updateDocumentStatus(userId: string, isDependent: boolean, type: string, status: DocumentStatus, reason?: string) {

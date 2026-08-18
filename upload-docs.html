@@ -177,12 +177,11 @@
 
                 loadingText.innerText = "Salvando no banco de dados...";
 
-                const { data: { publicUrl } } = _supabase.storage.from('academy-certs').getPublicUrl(path);
                 const dbField = type === 'cert' ? 'certificate_url' : 'identity_url';
 
                 const { error: updateError } = await _supabase
                     .from('academies')
-                    .update({ [dbField]: publicUrl })
+                    .update({ [dbField]: path })
                     .eq('id', academyId);
 
                 if (updateError) throw updateError;

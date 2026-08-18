@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { User, Role, PaymentStatus, DocumentStatus, Belt, RegistrationStatus } from '../types';
+import { createSignedStorageUrl } from '../utils/storage';
 
 export const studentService = {
   async getProfessorStudents(professorId: string) {
@@ -62,8 +63,8 @@ export const studentService = {
       });
     }
 
-    const mappedAtletas: User[] = (rawStudents || []).map(p => ({
-      id: p.id, 
+    const mappedAtletas: User[] = await Promise.all((rawStudents || []).map(async p => ({
+      id: p.id,
       federationId: p.federation_id, 
       fullName: p.full_name, 
       email: p.email, 
@@ -71,9 +72,9 @@ export const studentService = {
       phone: p.phone, // Mapeamento do telefone adicionado
       role: p.role as Role,
       isBoardingComplete: p.is_boarding_complete, 
-      paymentStatus: (p.payment_status as PaymentStatus) || PaymentStatus.PENDING, 
-      profileImage: p.profile_image_url,
-      registrationDate: p.updated_at || p.created_at, 
+      paymentStatus: (p.payment_status as PaymentStatus) || PaymentStatus.PENDING,
+      profileImage: await createSignedStorageUrl(p.profile_image_url, 'avatars'),
+      registrationDate: p.updated_at || p.created_at,
       address: p.address, 
       cpf: p.cpf, 
       nationality: p.nationality,
@@ -89,9 +90,9 @@ export const studentService = {
         status: (p.academy_status as RegistrationStatus) || RegistrationStatus.PENDING 
       },
       pendingRequests: requestsMap[p.id] || []
-    }));
+    })));
 
-    const mappedDependents: User[] = (rawDependents || []).map(d => ({
+    const mappedDependents: User[] = await Promise.all((rawDependents || []).map(async d => ({
       id: d.id, 
       federationId: d.federation_id, 
       fullName: d.full_name, 
@@ -100,9 +101,9 @@ export const studentService = {
       phone: d.phone, // Mapeamento do telefone adicionado
       role: Role.STUDENT,
       isBoardingComplete: true, 
-      paymentStatus: (d.payment_status as PaymentStatus) || PaymentStatus.PENDING, 
-      profileImage: d.profile_image_url,
-      registrationDate: d.created_at, 
+      paymentStatus: (d.payment_status as PaymentStatus) || PaymentStatus.PENDING,
+      profileImage: await createSignedStorageUrl(d.profile_image_url, 'avatars'),
+      registrationDate: d.created_at,
       address: d.address, 
       cpf: d.cpf, 
       nationality: d.nationality,
@@ -119,9 +120,9 @@ export const studentService = {
         status: (d.academy_status as RegistrationStatus) || RegistrationStatus.PENDING 
       },
       pendingRequests: []
-    }));
+    })));
 
-    return { 
+    return {
       mappedStudents: [...mappedAtletas, ...mappedDependents], 
       hasAc: true 
     };

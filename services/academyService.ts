@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { Academy, RegistrationStatus, DocumentStatus } from '../types';
+import { createSignedStorageUrl } from '../utils/storage';
 
 export interface AcademyWithProfile extends Academy {
     ownerProfile?: {
@@ -30,7 +31,7 @@ export const academyService = {
 
     if (error) throw error;
 
-    return (academies || []).map(acc => ({
+    return await Promise.all((academies || []).map(async acc => ({
         id: acc.id,
         name: acc.name,
         teamName: acc.team_name,
@@ -44,15 +45,15 @@ export const academyService = {
         deleted: acc.deleted,
         blackBeltCertificate: {
             status: acc.doc_certificate_status || (acc.certificate_url ? DocumentStatus.PENDING : DocumentStatus.MISSING),
-            url: acc.certificate_url,
+            url: await createSignedStorageUrl(acc.certificate_url, 'academy-certs'),
             rejectionReason: acc.doc_certificate_reason
         },
         identityDocument: {
             status: acc.doc_identity_status || (acc.identity_url ? DocumentStatus.PENDING : DocumentStatus.MISSING),
-            url: acc.identity_url,
+            url: await createSignedStorageUrl(acc.identity_url, 'academy-certs'),
             rejectionReason: acc.doc_identity_reason
         }
-    })) as Academy[];
+    }))) as Academy[];
   },
 
   async findSimilarActiveAcademies(name: string, excludeAcademyId?: string, signal?: AbortSignal) {
@@ -186,7 +187,7 @@ export const academyService = {
         .in('academy_id', academyIds)
         .eq('status', 'PENDING');
 
-    const mapped: AcademyWithProfile[] = data?.map((a: any) => {
+    const mapped: AcademyWithProfile[] = data ? await Promise.all(data.map(async (a: any) => {
         const profile = Array.isArray(a.owner_profile) ? a.owner_profile[0] : a.owner_profile;
         const pending = reqs?.find(r => r.academy_id === a.id);
         
@@ -203,12 +204,12 @@ export const academyService = {
             deleted: a.deleted,
             address: a.address,
             blackBeltCertificate: {
-                url: a.certificate_url,
+                url: await createSignedStorageUrl(a.certificate_url, 'academy-certs'),
                 status: a.doc_certificate_status || (a.certificate_url ? DocumentStatus.PENDING : DocumentStatus.MISSING),
                 rejectionReason: a.doc_certificate_reason
             },
             identityDocument: {
-                url: a.identity_url,
+                url: await createSignedStorageUrl(a.identity_url, 'academy-certs'),
                 status: a.doc_identity_status || (a.identity_url ? DocumentStatus.PENDING : DocumentStatus.MISSING),
                 rejectionReason: a.doc_identity_reason
             },
@@ -227,9 +228,9 @@ export const academyService = {
                 createdAt: pending.created_at
             } : undefined
         };
-    }) || [];
+    })) : [];
 
-    return { 
+    return {
         data: mapped, 
         total: count || 0 
     };

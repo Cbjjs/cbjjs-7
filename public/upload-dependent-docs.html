@@ -153,7 +153,9 @@
         }
 
         async function init() {
-            const { data } = await _supabase.from('dependents').select('full_name, profile_image_url, doc_identity_url, doc_medical_url, doc_belt_url').eq('id', childId).single();
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) { window.location.href = '/'; return; }
+            const { data } = await _supabase.from('dependents').select('full_name, profile_image_url, doc_identity_url, doc_medical_url, doc_belt_url').eq('id', childId).eq('parent_id', session.user.id).single();
             if (data) {
                 document.getElementById('user-name').innerText = data.full_name;
                 if (data.profile_image_url) markAsDone('profile');
@@ -180,17 +182,19 @@
                 const fileExt = file.name.split('.').pop().toLowerCase();
                 const fileName = `${type}_${childId}_${Date.now()}.${fileExt}`;
                 const folder = type === 'profile' ? 'avatars' : 'documents';
+                const path = `dependents/${childId}/${fileName}`;
                 
-                await _supabase.storage.from(folder).upload(`dependents/${childId}/${fileName}`, file, { upsert: true });
-                const { data: { publicUrl } } = _supabase.storage.from(folder).getPublicUrl(`dependents/${childId}/${fileName}`);
+                const { error: uploadError } = await _supabase.storage.from(folder).upload(path, file, { upsert: true });
+                if (uploadError) throw uploadError;
                 
                 let dbUpdates = {};
-                if (type === 'profile') dbUpdates = { profile_image_url: publicUrl, doc_profile_status: 'PENDING' };
-                else if (type === 'identity') dbUpdates = { doc_identity_url: publicUrl, doc_identity_status: 'PENDING' };
-                else if (type === 'medical') dbUpdates = { doc_medical_url: publicUrl, doc_medical_status: 'PENDING' };
-                else if (type === 'belt') dbUpdates = { doc_belt_url: publicUrl, doc_belt_status: 'PENDING' };
+                if (type === 'profile') dbUpdates = { profile_image_url: path, doc_profile_status: 'PENDING' };
+                else if (type === 'identity') dbUpdates = { doc_identity_url: path, doc_identity_status: 'PENDING' };
+                else if (type === 'medical') dbUpdates = { doc_medical_url: path, doc_medical_status: 'PENDING' };
+                else if (type === 'belt') dbUpdates = { doc_belt_url: path, doc_belt_status: 'PENDING' };
                 
-                await _supabase.from('dependents').update(dbUpdates).eq('id', childId);
+                const { error: updateError } = await _supabase.from('dependents').update(dbUpdates).eq('id', childId);
+                if (updateError) throw updateError;
                 markAsDone(type);
             } catch (err) { alert(err.message); } finally { overlay.classList.remove('active'); }
         }

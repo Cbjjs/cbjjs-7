@@ -5,6 +5,7 @@ import { fetchAddressByZip } from '../utils/address';
 import { useSupabaseQuery } from './useSupabaseQuery';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../context/ToastContext';
+import { createSignedStorageUrl } from '../utils/storage';
 
 export function useMyDependents() {
     const { user } = useAuth();
@@ -40,12 +41,12 @@ export function useMyDependents() {
 
             if (error) return { data: null, error };
             
-            const mapped = (data || []).map((d: any) => ({
+            const mapped = await Promise.all((data || []).map(async (d: any) => ({
                 ...d,
                 fullName: d.full_name,
                 dob: d.dob,
                 federationId: d.federation_id,
-                profileImageUrl: d.profile_image_url,
+                profileImageUrl: await createSignedStorageUrl(d.profile_image_url, 'avatars'),
                 academyStatus: d.academy_status,
                 paymentStatus: d.payment_status,
                 belt: d.belt as Belt,
@@ -61,7 +62,7 @@ export function useMyDependents() {
                     belt: { status: d.doc_belt_status, url: d.doc_belt_url, rejectionReason: d.doc_belt_reason },
                     profile: { status: d.doc_profile_status, url: d.profile_image_url, rejectionReason: d.doc_profile_reason }
                 }
-            }));
+            })));
 
             return { data: mapped as any, error: null };
         },

@@ -3,6 +3,7 @@ import { User, Role, PaymentStatus, DocumentStatus, Belt, RegistrationStatus } f
 import { supabase } from '../lib/supabase';
 import { safeDbCall } from '../utils/dbResilience';
 import { useQueryClient } from '@tanstack/react-query';
+import { createSignedStorageUrl } from '../utils/storage';
 
 type ConnectionStatus = 'ok' | 'recovering' | 'failed';
 type AuthStatus = 'IDLE' | 'CHECKING' | 'AUTHENTICATED' | 'UNAUTHENTICATED' | 'ERROR' | 'PASSWORD_RECOVERY';
@@ -109,7 +110,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const { data: acData } = await supabase.from('academies').select('name, phone').eq('id', profile.academy_id).maybeSingle();
             if (acData) { academyInfo.name = acData.name; academyInfo.phone = acData.phone; }
         }
-        setUser(mapProfileToUser(profile, academyInfo, email));
+        const mappedUser = mapProfileToUser(profile, academyInfo, email);
+        mappedUser.profileImage = await createSignedStorageUrl(profile.profile_image_url, 'avatars');
+        setUser(mappedUser);
       }
     } catch (err) {
       console.error("[AUTH] Erro crítico ao carregar perfil:", err);

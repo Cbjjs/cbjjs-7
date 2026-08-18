@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { AdminListSkeleton, PaginationControls, AdminErrorState } from '../components/AdminShared';
 import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { AdminProfessorDetailsModal } from '../components/AdminProfessorDetailsModal';
+import { createSignedStorageUrl } from '../utils/storage';
 
 export const AdminProfessors: React.FC = () => {
   const PAGE_SIZE = 10;
@@ -61,7 +62,7 @@ export const AdminProfessors: React.FC = () => {
 
       if (error) return { data: null, error };
 
-      const mapped = data?.map(p => {
+      const mapped = data ? await Promise.all(data.map(async p => {
         const owned = academyMap[p.id] || [];
         return {
             id: p.id, 
@@ -71,7 +72,7 @@ export const AdminProfessors: React.FC = () => {
             role: p.role, 
             cpf: p.cpf, 
             isBoardingComplete: p.is_boarding_complete, 
-            profileImage: p.profile_image_url, 
+            profileImage: await createSignedStorageUrl(p.profile_image_url, 'avatars'),
             federationId: p.federation_id,
             paymentStatus: p.payment_status, 
             athleteData: { belt: p.belt }, 
@@ -82,7 +83,7 @@ export const AdminProfessors: React.FC = () => {
             ownedAcademies: owned,
             academy: owned.length > 0 ? { name: owned[0].name, isOwner: true, status: owned[0].status } : undefined
         };
-      }) || [];
+      })) : [];
 
       return { data: mapped as any, error: null, count };
     }

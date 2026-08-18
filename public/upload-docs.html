@@ -111,11 +111,12 @@
 
                 const { data: academy, error } = await _supabase
                     .from('academies')
-                    .select('name, certificate_url, identity_url')
+                    .select('name, owner_id, certificate_url, identity_url')
                     .eq('id', academyId)
                     .single();
 
                 if (error) throw error;
+                if (!academy || academy.owner_id !== session.user.id) throw new Error('Você não tem permissão para esta academia.');
                 if (academy) {
                     document.getElementById('academy-name').innerText = academy.name;
                     if (academy.certificate_url) markAsDone('cert', true);
@@ -173,10 +174,10 @@
 
                 if (uploadError) throw uploadError;
 
-                const { data: { publicUrl } } = _supabase.storage.from('academy-certs').getPublicUrl(path);
                 const dbField = type === 'cert' ? 'certificate_url' : 'identity_url';
 
-                await _supabase.from('academies').update({ [dbField]: publicUrl }).eq('id', academyId);
+                const { error: updateError } = await _supabase.from('academies').update({ [dbField]: path }).eq('id', academyId);
+                if (updateError) throw updateError;
                 markAsDone(type);
             } catch (err) {
                 alert('Erro: ' + (err.message || 'Falha na conexão'));

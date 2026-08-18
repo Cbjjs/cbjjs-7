@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext';
 import { userService } from '../services/userService';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
+import { createSignedStorageUrl } from '../utils/storage';
 
 interface AdminProfessorDetailsModalProps {
     isOpen: boolean;
@@ -71,13 +72,13 @@ export const AdminProfessorDetailsModal: React.FC<AdminProfessorDetailsModalProp
                 role: p.role,
                 cpf: p.cpf,
                 isBoardingComplete: p.is_boarding_complete,
-                profileImage: p.profile_image_url,
+                profileImage: await createSignedStorageUrl(p.profile_image_url, 'avatars'),
                 federationId: p.federation_id,
                 paymentStatus: p.payment_status,
                 athleteData: { belt: p.belt },
                 documents: {
-                    identity: { status: p.doc_identity_status, url: p.doc_identity_url },
-                    belt: { status: p.doc_belt_status, url: p.doc_belt_url }
+                    identity: { status: p.doc_identity_status, url: await createSignedStorageUrl(p.doc_identity_url, 'documents') },
+                    belt: { status: p.doc_belt_status, url: await createSignedStorageUrl(p.doc_belt_url, 'documents') }
                 },
                 ownedAcademies: owned
             };
