@@ -34,12 +34,26 @@ export function useMyDependents() {
         async (signal) => {
             const { data, error } = await supabase
                 .from('dependents')
-                .select('*, academies(name, phone, owner_profile:profiles!owner_id(full_name))')
+                .select('*, academies(name, phone)')
                 .eq('parent_id', user!.id)
                 .order('created_at', { ascending: false })
                 .abortSignal(signal!);
 
             if (error) return { data: null, error };
+
+            const academyIds = Array.from(new Set((data || [])
+                .map((d: any) => d.academy_id)
+                .filter(Boolean)));
+            let academyOwnerNames = new Map<string, string | null>();
+            if (academyIds.length > 0) {
+                const { data: directoryData, error: directoryError } = await supabase
+                    .from('academy_directory')
+                    .select('id, owner_name')
+                    .in('id', academyIds)
+                    .abortSignal(signal!);
+                if (directoryError) return { data: null, error: directoryError };
+                academyOwnerNames = new Map((directoryData || []).map((academy: any) => [academy.id, academy.owner_name]));
+            }
             
             const mapped = await Promise.all((data || []).map(async (d: any) => ({
                 ...d,
@@ -51,10 +65,7 @@ export function useMyDependents() {
                 paymentStatus: d.payment_status,
                 belt: d.belt as Belt,
                 academyName: d.academies?.name,
-                academyOwnerName: (() => {
-                    const ownerProfile = Array.isArray(d.academies?.owner_profile) ? d.academies.owner_profile[0] : d.academies?.owner_profile;
-                    return ownerProfile?.full_name || undefined;
-                })(),
+                academyOwnerName: academyOwnerNames.get(d.academy_id) || undefined,
                 academyPhone: d.academies?.phone,
                 documents: {
                     identity: { status: d.doc_identity_status, url: d.doc_identity_url, rejectionReason: d.doc_identity_reason },
@@ -72,8 +83,8 @@ export function useMyDependents() {
     const fetchAcademies = useCallback(async () => {
         setLoadingAcademies(true);
         try {
-            let query = supabase.from('academies')
-                .select('id, name, owner_id, owner_profile:profiles!owner_id(full_name)')
+            let query = supabase.from('academy_directory')
+                .select('id, name, owner_id, owner_name, status, deleted')
                 .eq('status', 'APPROVED')
                 .eq('deleted', 'no')
                 .order('name', { ascending: true });
@@ -81,12 +92,11 @@ export function useMyDependents() {
             const { data, error } = await query;
             if (error) throw error;
             const mapped = (data || []).map((academy: any) => {
-                const ownerProfile = Array.isArray(academy.owner_profile) ? academy.owner_profile[0] : academy.owner_profile;
                 return {
                     id: academy.id,
                     name: academy.name,
                     ownerId: academy.owner_id,
-                    ownerName: ownerProfile?.full_name || undefined,
+                    ownerName: academy.owner_name,
                     status: RegistrationStatus.APPROVED
                 } as Academy;
             });

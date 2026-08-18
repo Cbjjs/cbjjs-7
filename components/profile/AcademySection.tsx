@@ -25,8 +25,8 @@ export const AcademySection: React.FC<AcademySectionProps> = ({
     if (!isEditing) return;
     setLoadingAcademies(true);
     try {
-      let query = supabase.from('academies')
-        .select('id, name, owner_id, owner_profile:profiles!owner_id(full_name)')
+      let query = supabase.from('academy_directory')
+        .select('id, name, owner_id, owner_name, status, deleted')
         .eq('status', 'APPROVED')
         .eq('deleted', 'no') // Filtro de lixeira adicionado
         .order('name', { ascending: true })
@@ -39,12 +39,11 @@ export const AcademySection: React.FC<AcademySectionProps> = ({
       const { data, error } = await query;
       if (error) throw error;
       const mapped = (data || []).map((academy: any) => {
-        const ownerProfile = Array.isArray(academy.owner_profile) ? academy.owner_profile[0] : academy.owner_profile;
         return {
           id: academy.id,
           name: academy.name,
           ownerId: academy.owner_id,
-          ownerName: ownerProfile?.full_name || undefined,
+          ownerName: academy.owner_name,
           status: RegistrationStatus.APPROVED
         } as Academy;
       });
