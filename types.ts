@@ -204,6 +204,7 @@ export interface Academy {
   name: string;
   teamName?: string;
   ownerId: string;
+  ownerName?: string;
   cnpj?: string;
   federationId?: string;
 

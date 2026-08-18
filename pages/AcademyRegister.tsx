@@ -24,6 +24,7 @@ export const AcademyRegister: React.FC = () => {
         academies, isLoading, isError, view, setView, isSubmitting,
         selectedAcademy, setSelectedAcademy, isEditing, setIsEditing,
         step, setStep, loadingZip, formErrors, formData, handleZipLookup,
+        similarAcademies, isSearchingSimilarAcademies,
         validateStep, handleSubmitNew, handleSaveUpdate, resetForm,
         startEditing, refetch, setFormData
     } = useMyAcademies();
@@ -109,7 +110,21 @@ export const AcademyRegister: React.FC = () => {
                                 {step === 1 && (
                                     <div className="space-y-8 animate-fadeIn">
                                         <h3 className="font-black text-xl dark:text-white uppercase tracking-tighter">1. Informações Básicas</h3>
-                                        <div><label className={labelClass}>Nome Completo da Academia *</label><input className={inputClass(!!formErrors.teamName)} value={formData.teamName} onChange={e => handleChange('teamName', e.target.value)} placeholder="Ex: Gracie Barra Centro" required /></div>
+                                        <div>
+                                            <label className={labelClass}>Nome Completo da Academia *</label>
+                                            <input className={inputClass(!!formErrors.teamName)} value={formData.teamName} onChange={e => handleChange('teamName', e.target.value)} placeholder="Ex: Gracie Barra Centro" required />
+                                            {isSearchingSimilarAcademies && <p className="mt-2 text-xs font-medium text-gray-500 dark:text-gray-400">Verificando nomes semelhantes...</p>}
+                                            {similarAcademies.length > 0 && (
+                                                <div className="mt-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-2xl text-amber-900 dark:text-amber-100" role="status">
+                                                    <p className="text-sm font-bold">Encontramos academias com nome semelhante.</p>
+                                                    <p className="mt-1 text-xs leading-relaxed">Isso não impede o cadastro. Para facilitar a identificação, diferencie o nome usando o bairro, a cidade, o professor ou outra referência. Apenas mudar maiúsculas/minúsculas não diferencia.</p>
+                                                    <p className="mt-2 text-xs leading-relaxed">Exemplos: <span className="font-bold">“Jiu-Jitsu Carioca — Duque de Caxias”</span> ou <span className="font-bold">“Jiu-Jitsu Carioca — Prof. João Silva”</span>.</p>
+                                                    <ul className="mt-2 list-disc list-inside text-xs">
+                                                        {similarAcademies.slice(0, 5).map(academy => <li key={academy.id}>{academy.name}</li>)}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div><label className={labelClass}>CPF do Responsável *</label><input className={inputClass(!!formErrors.responsibleCpf)} value={formData.responsibleCpf} onChange={e => handleChange('responsibleCpf', e.target.value)} maxLength={14} placeholder="000.000.000-00" required /></div>
                                             <div><label className={labelClass}>CNPJ (Opcional)</label><input className={inputClass(false)} value={formData.cnpj} onChange={e => handleChange('cnpj', e.target.value)} maxLength={18} placeholder="00.000.000/0000-00" /></div>
@@ -171,7 +186,21 @@ export const AcademyRegister: React.FC = () => {
                             {isEditing ? (
                                 <div className="space-y-8">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="col-span-2"><label className={labelClass}>Nome Academia *</label><input className={inputClass(!!formErrors.teamName)} value={formData.teamName} onChange={e => handleChange('teamName', e.target.value)} /></div>
+                                        <div className="col-span-2">
+                                            <label className={labelClass}>Nome Academia *</label>
+                                            <input className={inputClass(!!formErrors.teamName)} value={formData.teamName} onChange={e => handleChange('teamName', e.target.value)} />
+                                            {isSearchingSimilarAcademies && <p className="mt-2 text-xs font-medium text-gray-500 dark:text-gray-400">Verificando nomes semelhantes...</p>}
+                                            {similarAcademies.length > 0 && (
+                                                <div className="mt-3 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-2xl text-amber-900 dark:text-amber-100" role="status">
+                                                    <p className="text-sm font-bold">Encontramos academias com nome semelhante.</p>
+                                                    <p className="mt-1 text-xs leading-relaxed">Isso não impede o cadastro. Para facilitar a identificação, diferencie o nome usando o bairro, a cidade, o professor ou outra referência. Apenas mudar maiúsculas/minúsculas não diferencia.</p>
+                                                    <p className="mt-2 text-xs leading-relaxed">Exemplos: <span className="font-bold">“Jiu-Jitsu Carioca — Duque de Caxias”</span> ou <span className="font-bold">“Jiu-Jitsu Carioca — Prof. João Silva”</span>.</p>
+                                                    <ul className="mt-2 list-disc list-inside text-xs">
+                                                        {similarAcademies.slice(0, 5).map(academy => <li key={academy.id}>{academy.name}</li>)}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
                                         <div><label className={labelClass}>Telefone *</label><input className={inputClass(!!formErrors.phone)} value={formData.phone} onChange={e => handleChange('phone', e.target.value)} /></div>
                                         <div>
                                             <label className={labelClass}>CEP *</label>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Search, Loader2, CheckCircle, Building, Save } from 'lucide-react';
-import { Academy } from '../../types';
+import { Academy, RegistrationStatus } from '../../types';
 import { supabase } from '../../lib/supabase';
 
 interface ChangeAcademyModalProps {
@@ -25,7 +25,7 @@ export const ChangeAcademyModal: React.FC<ChangeAcademyModalProps> = ({
     setLoadingAcademies(true);
     try {
       let query = supabase.from('academies')
-        .select('*')
+        .select('id, name, owner_id, owner_profile:profiles!owner_id(full_name)')
         .eq('status', 'APPROVED')
         .eq('deleted', 'no') // Filtro de lixeira adicionado
         .order('name', { ascending: true })
@@ -37,7 +37,17 @@ export const ChangeAcademyModal: React.FC<ChangeAcademyModalProps> = ({
 
       const { data, error } = await query;
       if (error) throw error;
-      setAcademiesList(data as any || []);
+      const mapped = (data || []).map((academy: any) => {
+        const ownerProfile = Array.isArray(academy.owner_profile) ? academy.owner_profile[0] : academy.owner_profile;
+        return {
+          id: academy.id,
+          name: academy.name,
+          ownerId: academy.owner_id,
+          ownerName: ownerProfile?.full_name || undefined,
+          status: RegistrationStatus.APPROVED
+        } as Academy;
+      });
+      setAcademiesList(mapped);
     } catch (error) {
       console.error("Erro ao buscar academias:", error);
     } finally {
@@ -106,7 +116,7 @@ export const ChangeAcademyModal: React.FC<ChangeAcademyModalProps> = ({
                                 ${selectedAcademy?.id === ac.id ? 'bg-cbjjs-blue text-white shadow-lg' : 'hover:bg-gray-50 dark:hover:bg-slate-800 dark:text-gray-300'}
                             `}
                         >
-                            <span className="font-bold text-sm">{ac.name}</span>
+                            <span className="font-bold text-sm">{ac.name} — {ac.ownerName ? `Prof. ${ac.ownerName}` : 'Professor não informado'}</span>
                             {selectedAcademy?.id === ac.id && <CheckCircle size={18}/>}
                         </button>
                     ))}

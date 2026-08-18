@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Dependent, Belt, PaymentStatus, Academy } from '../types';
+import { Dependent, Belt, PaymentStatus, Academy, RegistrationStatus } from '../types';
 import { fetchAddressByZip } from '../utils/address';
 import { useSupabaseQuery } from './useSupabaseQuery';
 import { supabase } from '../lib/supabase';
@@ -33,7 +33,7 @@ export function useMyDependents() {
         async (signal) => {
             const { data, error } = await supabase
                 .from('dependents')
-                .select('*, academies(name, phone)')
+                .select('*, academies(name, phone, owner_profile:profiles!owner_id(full_name))')
                 .eq('parent_id', user!.id)
                 .order('created_at', { ascending: false })
                 .abortSignal(signal!);
@@ -50,6 +50,10 @@ export function useMyDependents() {
                 paymentStatus: d.payment_status,
                 belt: d.belt as Belt,
                 academyName: d.academies?.name,
+                academyOwnerName: (() => {
+                    const ownerProfile = Array.isArray(d.academies?.owner_profile) ? d.academies.owner_profile[0] : d.academies?.owner_profile;
+                    return ownerProfile?.full_name || undefined;
+                })(),
                 academyPhone: d.academies?.phone,
                 documents: {
                     identity: { status: d.doc_identity_status, url: d.doc_identity_url, rejectionReason: d.doc_identity_reason },
@@ -67,11 +71,25 @@ export function useMyDependents() {
     const fetchAcademies = useCallback(async () => {
         setLoadingAcademies(true);
         try {
-            let query = supabase.from('academies').select('*').eq('status', 'APPROVED').order('name', { ascending: true });
+            let query = supabase.from('academies')
+                .select('id, name, owner_id, owner_profile:profiles!owner_id(full_name)')
+                .eq('status', 'APPROVED')
+                .eq('deleted', 'no')
+                .order('name', { ascending: true });
             if (searchTerm) query = query.ilike('name', `%${searchTerm}%`);
             const { data, error } = await query;
             if (error) throw error;
-            setAcademiesList(data as any || []);
+            const mapped = (data || []).map((academy: any) => {
+                const ownerProfile = Array.isArray(academy.owner_profile) ? academy.owner_profile[0] : academy.owner_profile;
+                return {
+                    id: academy.id,
+                    name: academy.name,
+                    ownerId: academy.owner_id,
+                    ownerName: ownerProfile?.full_name || undefined,
+                    status: RegistrationStatus.APPROVED
+                } as Academy;
+            });
+            setAcademiesList(mapped);
         } catch (error) { console.error(error); } finally { setLoadingAcademies(false); }
     }, [searchTerm]);
 

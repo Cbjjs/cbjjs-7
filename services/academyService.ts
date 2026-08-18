@@ -2,13 +2,19 @@ import { supabase } from '../lib/supabase';
 import { Academy, RegistrationStatus, DocumentStatus } from '../types';
 
 export interface AcademyWithProfile extends Academy {
-    ownerProfile?: { 
-        fullName: string; 
-        email: string; 
-        dob: string; 
-        cpf: string; 
+    ownerProfile?: {
+        fullName: string;
+        email: string;
+        dob: string;
+        cpf: string;
     }
 }
+
+const normalizeAcademyName = (value: string) => value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('pt-BR')
+    .replace(/[^a-z0-9]/g, '');
 
 export const academyService = {
   // --- MÉTODOS DO PROFESSOR (USUÁRIO) ---
@@ -47,6 +53,30 @@ export const academyService = {
             rejectionReason: acc.doc_identity_reason
         }
     })) as Academy[];
+  },
+
+  async findSimilarActiveAcademies(name: string, excludeAcademyId?: string, signal?: AbortSignal) {
+    const normalizedName = normalizeAcademyName(name);
+    if (normalizedName.length < 3) return [] as Pick<Academy, 'id' | 'name'>[];
+
+    let query = supabase
+        .from('academies')
+        .select('id, name')
+        .eq('deleted', 'no')
+        .order('name', { ascending: true });
+
+    if (signal) query = query.abortSignal(signal);
+    const { data, error } = await query;
+    if (error) throw error;
+
+    return (data || [])
+        .filter(academy => academy.id !== excludeAcademyId)
+        .map(academy => ({ id: academy.id, name: academy.name }))
+        .filter(academy => {
+            const candidate = normalizeAcademyName(academy.name || '');
+            if (candidate.length < 3) return false;
+            return candidate === normalizedName || candidate.includes(normalizedName) || normalizedName.includes(candidate);
+        });
   },
 
   async createAcademy(userId: string, data: any) {

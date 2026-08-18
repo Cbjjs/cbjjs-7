@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Belt, Role, Academy } from '../types';
+import { Belt, Role, Academy, RegistrationStatus } from '../types';
 import { validateCPF, formatCPF } from '../utils/validators';
 import { fetchAddressByZip } from '../utils/address';
 import { supabase } from '../lib/supabase';
@@ -45,7 +45,7 @@ export function useOnboarding() {
         const to = from + PAGE_SIZE - 1;
         // Filtro .eq('deleted', 'no') adicionado
         let query = supabase.from('academies')
-            .select('*')
+            .select('id, name, owner_id, owner_profile:profiles!owner_id(full_name)')
             .eq('status', 'APPROVED')
             .eq('deleted', 'no')
             .range(from, to)
@@ -55,7 +55,17 @@ export function useOnboarding() {
         const { data, error } = await query;
         if (error) throw error;
         if (data) {
-            setAcademiesList(prev => reset ? (data as any) : [...prev, ...data as any]);
+            const mapped = data.map((academy: any) => {
+                const ownerProfile = Array.isArray(academy.owner_profile) ? academy.owner_profile[0] : academy.owner_profile;
+                return {
+                    id: academy.id,
+                    name: academy.name,
+                    ownerId: academy.owner_id,
+                    ownerName: ownerProfile?.full_name || undefined,
+                    status: RegistrationStatus.APPROVED
+                } as Academy;
+            });
+            setAcademiesList(prev => reset ? mapped : [...prev, ...mapped]);
             if (reset) setPage(1);
             else setPage(prev => prev + 1);
         }

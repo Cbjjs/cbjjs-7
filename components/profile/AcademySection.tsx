@@ -26,7 +26,7 @@ export const AcademySection: React.FC<AcademySectionProps> = ({
     setLoadingAcademies(true);
     try {
       let query = supabase.from('academies')
-        .select('*')
+        .select('id, name, owner_id, owner_profile:profiles!owner_id(full_name)')
         .eq('status', 'APPROVED')
         .eq('deleted', 'no') // Filtro de lixeira adicionado
         .order('name', { ascending: true })
@@ -38,7 +38,17 @@ export const AcademySection: React.FC<AcademySectionProps> = ({
 
       const { data, error } = await query;
       if (error) throw error;
-      setAcademiesList(data as any || []);
+      const mapped = (data || []).map((academy: any) => {
+        const ownerProfile = Array.isArray(academy.owner_profile) ? academy.owner_profile[0] : academy.owner_profile;
+        return {
+          id: academy.id,
+          name: academy.name,
+          ownerId: academy.owner_id,
+          ownerName: ownerProfile?.full_name || undefined,
+          status: RegistrationStatus.APPROVED
+        } as Academy;
+      });
+      setAcademiesList(mapped);
     } catch (error) {
       console.error("Erro ao buscar academias:", error);
     } finally {
@@ -106,7 +116,7 @@ export const AcademySection: React.FC<AcademySectionProps> = ({
                     ${(selectedAcademyId || user.academyId) === ac.id ? 'bg-cbjjs-blue text-white' : 'hover:bg-blue-50 dark:hover:bg-slate-800 dark:text-gray-300'}
                   `}
                 >
-                  <span className="font-bold">{ac.name}</span>
+                  <span className="font-bold">{ac.name} — {ac.ownerName ? `Prof. ${ac.ownerName}` : 'Professor não informado'}</span>
                   {(selectedAcademyId || user.academyId) === ac.id && <CheckCircle size={16}/>}
                 </button>
               ))}

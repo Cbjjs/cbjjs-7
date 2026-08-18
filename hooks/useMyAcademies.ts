@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Academy } from '../types';
 import { academyService } from '../services/academyService';
@@ -26,6 +26,40 @@ export function useMyAcademies() {
       teamName: '', responsibleCpf: '', cnpj: '', phone: '',
       zip: '', street: '', city: '', state: '', number: '', complement: ''
   });
+  const [similarAcademies, setSimilarAcademies] = useState<{ id: string; name: string }[]>([]);
+  const [isSearchingSimilarAcademies, setIsSearchingSimilarAcademies] = useState(false);
+
+  useEffect(() => {
+    const normalizedName = formData.teamName.trim();
+    if (normalizedName.length < 3) {
+      setSimilarAcademies([]);
+      setIsSearchingSimilarAcademies(false);
+      return;
+    }
+
+    setSimilarAcademies([]);
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setIsSearchingSimilarAcademies(true);
+      try {
+        const matches = await academyService.findSimilarActiveAcademies(
+          normalizedName,
+          isEditing ? selectedAcademy?.id : undefined,
+          controller.signal
+        );
+        setSimilarAcademies(matches);
+      } catch (error: any) {
+        if (error?.name !== 'AbortError') setSimilarAcademies([]);
+      } finally {
+        if (!controller.signal.aborted) setIsSearchingSimilarAcademies(false);
+      }
+    }, 450);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [formData.teamName, isEditing, selectedAcademy?.id]);
 
   // Busca de Dados
   const { data: queryData, isLoading, isError, refetch } = useSupabaseQuery<Academy[]>(
@@ -156,6 +190,8 @@ export function useMyAcademies() {
     formErrors,
     formData,
     setFormData,
+    similarAcademies,
+    isSearchingSimilarAcademies,
     handleZipLookup,
     validateStep,
     handleSubmitNew,
