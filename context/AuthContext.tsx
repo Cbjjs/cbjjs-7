@@ -223,12 +223,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = async () => {
     setLoading(true);
+    setError(null);
+    queryClient.clear();
+    setUser(null);
+    setAuthStatus('UNAUTHENTICATED');
+    setNeedsEmailConfirmation(false);
+    setLastRegisteredEmail('');
+
     try {
-      queryClient.clear();
-      setUser(null);
-      setAuthStatus('UNAUTHENTICATED');
-      await supabase.auth.signOut();
-    } catch (err) { console.warn("SignOut falhou", err); } finally { setLoading(false); }
+      const { error: signOutError } = await supabase.auth.signOut({ scope: 'global' });
+      if (signOutError) throw signOutError;
+    } catch (err) {
+      console.warn("SignOut global falhou; limpando a sessão local", err);
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+    } finally {
+      localStorage.removeItem('cbjjs-auth-token');
+      sessionStorage.removeItem('cbjjs-auth-token');
+      localStorage.removeItem('cbjjs_current_page');
+      setLoading(false);
+    }
   };
 
   const updateUser = async (updates: Partial<User>) => {
