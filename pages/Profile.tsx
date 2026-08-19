@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, DocumentStatus, PaymentStatus, RegistrationStatus } from '../types';
 import { supabase } from '../lib/supabase';
-import { Save, RefreshCw, Smartphone, Printer, MessageCircle, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Save, Pencil, Smartphone, Printer, MessageCircle, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { PaymentModal } from '../components/PaymentModal';
 import { PaymentInviteModal, PaymentPlanOption } from '../components/PaymentInviteModal';
@@ -113,6 +113,21 @@ export const Profile: React.FC = () => {
     }
   };
 
+  const handleStartEditing = () => {
+    setEditForm({
+      fullName: user.fullName,
+      email: user.email,
+      cpf: user.cpf,
+      phone: user.phone,
+      dob: user.dob,
+      nationality: user.nationality,
+      address: user.address ? { ...user.address } : { zip: '', street: '', city: '', state: '', number: '', complement: '' },
+      athleteData: { ...user.athleteData! },
+      academyId: user.academyId
+    });
+    setIsEditing(true);
+  };
+
   const handleSave = async () => {
     setIsSubmitting(true);
     try {
@@ -216,16 +231,8 @@ export const Profile: React.FC = () => {
          </div>
          <div className="flex flex-wrap gap-3">
              {!isEditing ? (
-                 <button onClick={() => {
-                    setEditForm({
-                        fullName: user.fullName, email: user.email, cpf: user.cpf, phone: user.phone, dob: user.dob,
-                        nationality: user.nationality, address: user.address ? { ...user.address } : { zip: '', street: '', city: '', state: '', number: '', complement: '' },
-                        athleteData: { ...user.athleteData! },
-                        academyId: user.academyId
-                    });
-                    setIsEditing(true);
-                 }} className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-all text-sm">
-                     <RefreshCw size={16} /> Atualizar Perfil
+                 <button onClick={handleStartEditing} className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 dark:border-slate-700 dark:bg-slate-800 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-all text-sm">
+                     <Pencil size={16} /> Editar Perfil
                  </button>
              ) : (
                  <>
@@ -271,24 +278,26 @@ export const Profile: React.FC = () => {
               isCheckingPayment={isCheckingPayment}
             />
 
-            <AcademySection 
+            <AcademySection
               user={user}
               isEditing={isEditing}
               selectedAcademyId={editForm.academyId}
               onAcademyChange={(id) => setEditForm(prev => ({ ...prev, academyId: id }))}
+              onEdit={handleStartEditing}
             />
 
             <DocumentsSection user={user} />
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-            <PersonalInfoSection 
+            <PersonalInfoSection
               user={user}
               isEditing={isEditing}
               editForm={editForm}
               onEditChange={(updates) => setEditForm(prev => ({ ...prev, ...updates }))}
               loadingZip={loadingZip}
               onZipChange={handleZipLookup}
+              onEdit={handleStartEditing}
             />
             <GraduationHistory 
                 athleteData={isEditing ? editForm.athleteData : user.athleteData} 

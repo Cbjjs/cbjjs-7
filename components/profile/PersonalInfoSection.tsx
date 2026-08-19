@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, MapPin, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, Loader2, Pencil } from 'lucide-react';
 import { User } from '../../types';
 import { BRAZIL_STATES } from '../../constants';
 import { formatDateBR } from '../../utils/formatters';
@@ -11,6 +11,7 @@ interface PersonalInfoSectionProps {
   onEditChange: (updates: Partial<User>) => void;
   loadingZip: boolean;
   onZipChange: (zip: string) => void;
+  onEdit: () => void;
 }
 
 export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
@@ -19,7 +20,8 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
   editForm,
   onEditChange,
   loadingZip,
-  onZipChange
+  onZipChange,
+  onEdit
 }) => {
   const labelClass = "block text-[10px] font-bold text-gray-400 uppercase mb-1 tracking-wider";
   const cardClass = "bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col transition-all hover:shadow-md h-auto";
@@ -29,7 +31,20 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
     <div className="space-y-6">
       {/* Dados Pessoais */}
       <div className={cardClass}>
-        <h3 className="text-lg font-black mb-6 border-b pb-4 dark:text-white">Dados Pessoais</h3>
+        <div className="flex items-center justify-between mb-6 border-b pb-4">
+          <h3 className="text-lg font-black dark:text-white">Dados Pessoais</h3>
+          {!isEditing && (
+            <button
+              type="button"
+              onClick={onEdit}
+              aria-label="Editar perfil"
+              title="Editar perfil"
+              className="p-2 rounded-lg text-gray-400 hover:text-cbjjs-blue hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors"
+            >
+              <Pencil size={16} />
+            </button>
+          )}
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <span className={labelClass}>Nome Completo</span>
@@ -89,7 +104,20 @@ export const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
 
       {/* Endereço */}
       <div className={cardClass}>
-        <h3 className="text-lg font-black mb-6 border-b pb-4 dark:text-white">Endereço</h3>
+        <div className="flex items-center justify-between mb-6 border-b pb-4">
+          <h3 className="text-lg font-black dark:text-white">Endereço</h3>
+          {!isEditing && (
+            <button
+              type="button"
+              onClick={onEdit}
+              aria-label="Editar perfil"
+              title="Editar perfil"
+              className="p-2 rounded-lg text-gray-400 hover:text-cbjjs-blue hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors"
+            >
+              <Pencil size={16} />
+            </button>
+          )}
+        </div>
         <div className="flex items-start gap-4">
           <div className="p-3 bg-blue-50 dark:bg-slate-700/50 rounded-2xl">
             <MapPin size={24} className="text-cbjjs-blue dark:text-blue-400" />

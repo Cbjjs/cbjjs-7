@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Building, CheckCircle, Clock, Search, Loader2 } from 'lucide-react';
+import { Building, CheckCircle, Clock, Search, Loader2, Pencil } from 'lucide-react';
 import { User, RegistrationStatus, Academy } from '../../types';
 import { supabase } from '../../lib/supabase';
 
@@ -8,10 +8,11 @@ interface AcademySectionProps {
   isEditing: boolean;
   selectedAcademyId?: string;
   onAcademyChange: (id: string, name: string) => void;
+  onEdit: () => void;
 }
 
-export const AcademySection: React.FC<AcademySectionProps> = ({ 
-  user, isEditing, selectedAcademyId, onAcademyChange 
+export const AcademySection: React.FC<AcademySectionProps> = ({
+  user, isEditing, selectedAcademyId, onAcademyChange, onEdit
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [academiesList, setAcademiesList] = useState<Academy[]>([]);
@@ -70,9 +71,22 @@ export const AcademySection: React.FC<AcademySectionProps> = ({
 
   return (
     <div className={cardClass}>
-      <h3 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-        <Building className="text-cbjjs-blue" size={18} /> Minha Academia
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+          <Building className="text-cbjjs-blue" size={18} /> Minha Academia
+        </h3>
+        {!isEditing && (
+          <button
+            type="button"
+            onClick={onEdit}
+            aria-label="Editar perfil"
+            title="Editar perfil"
+            className="p-2 rounded-lg text-gray-400 hover:text-cbjjs-blue hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            <Pencil size={16} />
+          </button>
+        )}
+      </div>
       
       <div className="space-y-4">
         {isEditing ? (
