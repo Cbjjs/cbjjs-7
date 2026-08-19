@@ -188,6 +188,16 @@ export function useAdminAthletes() {
     }
   };
 
+  const handleViewUser = async (user: User) => {
+    setViewingUser(user);
+    try {
+      const details = await athleteService.getAdminAthleteDetails(user.id, !!user.isDependent);
+      setViewingUser(current => current?.id === user.id ? details : current);
+    } catch (err: any) {
+      addToast('error', err.message || 'Erro ao carregar os detalhes do atleta.');
+    }
+  };
+
   return {
     // Estado de Navegação
     viewMode,
@@ -228,6 +238,7 @@ export function useAdminAthletes() {
 
     // Handlers
     refetch: shouldFetchAthletes ? refetchAthletes : refetchAcademies,
+    handleViewUser,
     handleApproveDoc,
     handleRejectDoc,
     confirmRejectDoc,

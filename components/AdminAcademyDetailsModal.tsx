@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { X, FileText, CheckCircle, MapPin, Phone, User as UserIcon, ExternalLink, Loader2, RefreshCw, AlertCircle, ArrowRight, Camera, Download, Trash2 } from 'lucide-react';
 import { Academy, RegistrationStatus, DocumentStatus } from '../types';
+import { supabase } from '../lib/supabase';
 import { modalLabelClass } from './AdminShared';
 import { AdminProfessorDetailsModal } from './AdminProfessorDetailsModal';
+import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
+import { createSignedStorageUrl } from '../utils/storage';
 
 interface AcademyWithProfile extends Academy {
     ownerProfile?: { fullName: string; email: string; dob: string; cpf: string; }
@@ -33,6 +36,29 @@ export const AdminAcademyDetailsModal: React.FC<AdminAcademyDetailsModalProps> =
 }) => {
     const [viewingProfId, setViewingProfId] = useState<string | null>(null);
     const [downloadingUrl, setDownloadingUrl] = useState<string | null>(null);
+
+    const { data: documentData, isLoading: loadingDocuments } = useSupabaseQuery<{ certificateUrl?: string; identityUrl?: string }>(
+        ['admin-academy-documents', academy?.id],
+        async () => {
+            if (!academy) return { data: null, error: null };
+
+            const { data, error } = await supabase
+                .from('academies')
+                .select('certificate_url, identity_url')
+                .eq('id', academy.id)
+                .single();
+
+            if (error) return { data: null, error };
+
+            const [certificateUrl, identityUrl] = await Promise.all([
+                createSignedStorageUrl(data.certificate_url, 'academy-certs'),
+                createSignedStorageUrl(data.identity_url, 'academy-certs')
+            ]);
+
+            return { data: { certificateUrl, identityUrl }, error: null };
+        },
+        { enabled: isOpen && !!academy }
+    );
 
     if (!isOpen || !academy) return null;
 
@@ -154,6 +180,7 @@ export const AdminAcademyDetailsModal: React.FC<AdminAcademyDetailsModalProps> =
                                 { key: 'identityDocument', label: 'Identidade do Responsável' }
                             ].map(docInfo => {
                                 const doc = academy[docInfo.key as keyof Academy] as any;
+                                const docUrl = docInfo.key === 'blackBeltCertificate' ? documentData?.data?.certificateUrl : documentData?.data?.identityUrl;
                                 const isApproved = doc?.status === DocumentStatus.APPROVED;
                                 
                                 return (
@@ -166,15 +193,17 @@ export const AdminAcademyDetailsModal: React.FC<AdminAcademyDetailsModalProps> =
                                         </div>
                                         
                                         <div className="relative group rounded-2xl overflow-hidden border dark:border-slate-700 bg-white dark:bg-slate-800 aspect-video flex items-center justify-center mb-4">
-                                            {doc?.url ? (
+                                            {loadingDocuments ? (
+                                                <Loader2 size={24} className="text-cbjjs-blue animate-spin" />
+                                            ) : docUrl ? (
                                                 <>
-                                                    {isImage(doc.url) ? (
-                                                        <img src={doc.url} className="w-full h-full object-cover" />
+                                                    {isImage(docUrl) ? (
+                                                        <img src={docUrl} className="w-full h-full object-cover" />
                                                     ) : (
                                                         <FileText size={48} className="text-gray-300" />
                                                     )}
                                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                        <a href={doc.url} target="_blank" className="p-3 bg-white rounded-full text-cbjjs-blue shadow-lg hover:scale-110 transition-transform"><ExternalLink size={24}/></a>
+                                                        <a href={docUrl} target="_blank" className="p-3 bg-white rounded-full text-cbjjs-blue shadow-lg hover:scale-110 transition-transform"><ExternalLink size={24}/></a>
                                                     </div>
                                                 </>
                                             ) : (
@@ -185,7 +214,7 @@ export const AdminAcademyDetailsModal: React.FC<AdminAcademyDetailsModalProps> =
                                             )}
                                         </div>
                                         
-                                        {doc?.url && (
+                                        {docUrl && (
                                             <div className="space-y-3">
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <button 

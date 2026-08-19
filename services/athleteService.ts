@@ -7,77 +7,128 @@ import { createSignedStorageUrl } from '../utils/storage';
  */
 
 export const athleteService = {
-  async getAdminAthletes(params: { 
-    subTab: 'approvals' | 'all', 
-    searchTerm: string, 
-    page: number, 
+  async getAdminAthletes(params: {
+    subTab: 'approvals' | 'all',
+    searchTerm: string,
+    page: number,
     pageSize: number,
-    academyId?: string 
+    academyId?: string
   }) {
     const { subTab, searchTerm, page, pageSize, academyId } = params;
-    const from = (page - 1) * pageSize;
-    const to = from + pageSize - 1;
+    const to = page * pageSize - 1;
+    const approvalFilter = subTab === 'all'
+      ? 'or(is_federation_approved.eq.true,and(doc_identity_status.eq.APPROVED,doc_profile_status.eq.APPROVED,doc_medical_status.eq.APPROVED,doc_belt_status.eq.APPROVED,payment_status.eq.PAID))'
+      : 'or(and(is_federation_approved.eq.false,doc_identity_status.neq.APPROVED),and(is_federation_approved.eq.false,doc_profile_status.neq.APPROVED),and(is_federation_approved.eq.false,doc_medical_status.neq.APPROVED),and(is_federation_approved.eq.false,doc_belt_status.neq.APPROVED),and(is_federation_approved.eq.false,payment_status.neq.PAID))';
 
-    // Base das queries
-    let qProfiles = supabase.from('profiles').select('*').eq('academy_status', 'APPROVED');
-    let qDependents = supabase.from('dependents').select('*').eq('academy_status', 'APPROVED');
+    let qProfiles = supabase
+      .from('profiles')
+      .select('*', { count: 'exact' })
+      .eq('academy_status', 'APPROVED');
+    let qDependents = supabase
+      .from('dependents')
+      .select('*', { count: 'exact' })
+      .eq('academy_status', 'APPROVED');
 
-    // Filtro por Academia (Nível 2)
     if (academyId) {
       qProfiles = qProfiles.eq('academy_id', academyId);
       qDependents = qDependents.eq('academy_id', academyId);
     }
 
-    if (searchTerm) {
-      qProfiles = qProfiles.or(`full_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
-      qDependents = qDependents.or(`full_name.ilike.%${searchTerm}%`);
+    const profileFilter = searchTerm
+      ? `and(${approvalFilter},or(full_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%))`
+      : approvalFilter;
+    const dependentFilter = searchTerm
+      ? `and(${approvalFilter},full_name.ilike.%${searchTerm}%)`
+      : approvalFilter;
+    qProfiles = qProfiles.or(profileFilter);
+    qDependents = qDependents.or(dependentFilter);
+
+    if (academyId) {
+      qProfiles = qProfiles.order('full_name', { ascending: true }).range(0, to);
+      qDependents = qDependents.order('full_name', { ascending: true }).range(0, to);
+    } else {
+      qProfiles = qProfiles.order('created_at', { ascending: false }).range(0, to);
+      qDependents = qDependents.order('created_at', { ascending: false }).range(0, to);
     }
 
     const [resProfiles, resDependents] = await Promise.all([qProfiles, qDependents]);
+    if (resProfiles.error) throw resProfiles.error;
+    if (resDependents.error) throw resDependents.error;
 
-    const { data: academies } = await supabase.from('academies').select('id, name, federation_id');
-    const academyMap = (academies || []).reduce((acc: any, curr) => {
+    const academyIds = Array.from(new Set([
+      ...(resProfiles.data || []).map(row => row.academy_id),
+      ...(resDependents.data || []).map(row => row.academy_id)
+    ].filter(Boolean)));
+    const { data: academies, error: academiesError } = academyIds.length > 0
+      ? await supabase.from('academies').select('id, name, federation_id').in('id', academyIds)
+      : { data: [], error: null };
+    if (academiesError) throw academiesError;
+
+    const academyMap = (academies || []).reduce((acc: Record<string, { name: string; federationId?: string }>, curr) => {
       acc[curr.id] = { name: curr.name, federationId: curr.federation_id ? String(curr.federation_id) : undefined };
       return acc;
     }, {});
 
-    const mappedAtletas = await Promise.all((resProfiles.data || []).map(async p => ({
-        ...await this.mapRawToUserWithSignedUrls(p, false),
-        academy: {
-          status: RegistrationStatus.APPROVED,
-          name: academyMap[p.academy_id]?.name || 'Não informada',
-          federationId: academyMap[p.academy_id]?.federationId
-        }
-    })));
+    const candidates = [
+      ...(resProfiles.data || []).map(raw => ({ raw, user: this.mapRawToUser(raw, false) })),
+      ...(resDependents.data || []).map(raw => ({ raw, user: this.mapRawToUser(raw, true) }))
+    ];
 
-    const mappedDependents = await Promise.all((resDependents.data || []).map(async d => ({
-        ...await this.mapRawToUserWithSignedUrls(d, true),
-        academy: {
-          status: RegistrationStatus.APPROVED,
-          name: academyMap[d.academy_id]?.name || 'Não informada',
-          federationId: academyMap[d.academy_id]?.federationId
-        }
-    })));
-
-    const allMapped = [...mappedAtletas, ...mappedDependents];
-
-    const filtered = allMapped.filter(athlete => {
-        const isApproved = athlete.isFederationApproved || this.checkAutomaticApproval(athlete);
-        return subTab === 'approvals' ? !isApproved : isApproved;
+    const filtered = candidates.filter(({ user }) => {
+      const isApproved = user.isFederationApproved || this.checkAutomaticApproval(user);
+      return subTab === 'approvals' ? !isApproved : isApproved;
     });
 
-    // Se estivermos em uma visão global (sem academyId), ordenamos por data de registro (ordem de chegada)
-    // Caso contrário, mantemos a ordem alfabética da visão por academia
     const sorted = filtered.sort((a, b) => {
-        if (!academyId) {
-            const dateA = new Date(a.registrationDate || 0).getTime();
-            const dateB = new Date(b.registrationDate || 0).getTime();
-            return dateB - dateA; // Mais recentes primeiro (ordem de chegada)
-        }
-        return a.fullName.localeCompare(b.fullName);
+      if (!academyId) {
+        const dateA = new Date(a.user.registrationDate || 0).getTime();
+        const dateB = new Date(b.user.registrationDate || 0).getTime();
+        return dateB - dateA;
+      }
+      return a.user.fullName.localeCompare(b.user.fullName);
     });
 
-    return { data: sorted.slice(from, to + 1), total: sorted.length };
+    const pageCandidates = sorted.slice((page - 1) * pageSize, page * pageSize);
+    const data = await Promise.all(pageCandidates.map(async ({ raw, user }) => {
+      user.profileImage = await createSignedStorageUrl(raw.profile_image_url, 'avatars');
+      user.documents.profile.url = user.profileImage;
+      user.documents.identity.url = undefined;
+      user.documents.medical.url = undefined;
+      user.documents.belt.url = undefined;
+      return {
+        ...user,
+        academy: {
+          status: RegistrationStatus.APPROVED,
+          name: academyMap[raw.academy_id]?.name || 'Não informada',
+          federationId: academyMap[raw.academy_id]?.federationId
+        }
+      };
+    }));
+
+    return {
+      data,
+      total: (resProfiles.count || 0) + (resDependents.count || 0)
+    };
+  },
+
+  async getAdminAthleteDetails(userId: string, isDependent: boolean): Promise<User> {
+    const table = isDependent ? 'dependents' : 'profiles';
+    const { data, error } = await supabase.from(table).select('*').eq('id', userId).single();
+    if (error) throw error;
+
+    const user = await this.mapRawToUserWithSignedUrls(data, isDependent);
+    const { data: academy } = data.academy_id
+      ? await supabase.from('academies').select('id, name, federation_id').eq('id', data.academy_id).maybeSingle()
+      : { data: null };
+
+    return {
+      ...user,
+      academy: {
+        status: RegistrationStatus.APPROVED,
+        name: academy?.name || 'Não informada',
+        federationId: academy?.federation_id ? String(academy.federation_id) : undefined
+      }
+    };
   },
 
   /**

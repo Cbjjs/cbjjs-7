@@ -204,12 +204,12 @@ export const academyService = {
             deleted: a.deleted,
             address: a.address,
             blackBeltCertificate: {
-                url: await createSignedStorageUrl(a.certificate_url, 'academy-certs'),
+                url: undefined,
                 status: a.doc_certificate_status || (a.certificate_url ? DocumentStatus.PENDING : DocumentStatus.MISSING),
                 rejectionReason: a.doc_certificate_reason
             },
             identityDocument: {
-                url: await createSignedStorageUrl(a.identity_url, 'academy-certs'),
+                url: undefined,
                 status: a.doc_identity_status || (a.identity_url ? DocumentStatus.PENDING : DocumentStatus.MISSING),
                 rejectionReason: a.doc_identity_reason
             },

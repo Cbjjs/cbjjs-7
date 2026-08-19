@@ -14,7 +14,7 @@ export const AdminAthletes: React.FC = () => {
     athletes, totalPages, isLoading, isError, subTab, searchTerm, page, isFetching,
     viewingUser, processingId, rejectingDoc, rejectionReason,
     setSubTab, setSearchTerm, setPage, setViewingUser, setRejectionReason, setRejectingDoc,
-    refetch, handleApproveDoc, handleRejectDoc, confirmRejectDoc, handleMarkAsPaid,
+    refetch, handleViewUser, handleApproveDoc, handleRejectDoc, confirmRejectDoc, handleMarkAsPaid,
     handleUpdateFederationId, handleApproveFederation
   } = useAdminAthletes();
 
@@ -184,8 +184,8 @@ export const AdminAthletes: React.FC = () => {
                             athletes.map(u => (
                               <AthleteListItem 
                                 key={u.id} 
-                                athlete={u} 
-                                onClick={setViewingUser}
+                                athlete={u}
+                                onClick={handleViewUser}
                                 getStatusLabel={getStatusLabel}
                                 getStatusColor={getStatusColor}
                                 showAcademyName={isGlobalView} // Mostra nome da academia na visão global
