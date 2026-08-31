@@ -6,6 +6,7 @@ import { formatDateBR } from '../../utils/formatters';
 import { SmartProfileImage } from './SmartProfileImage';
 import { formatNameForMobile } from '../../utils/nameFormatter';
 import { formatBeltForDisplay } from '../../utils/beltFormatter';
+import { useBeltMappings } from '../../hooks/useBeltMappings';
 
 /**
  * [INSTRUÇÃO CRÍTICA PARA IA - NÃO MODIFICAR]: 
@@ -29,6 +30,7 @@ interface IDCardMobileProps {
 export const IDCardMobile: React.FC<IDCardMobileProps> = ({ 
     fullName, profileImage, federationId, dob, belt, academyName, paymentConfirmedAt, responsavel
 }) => {
+    const { mappings } = useBeltMappings();
     const containerRef = useRef<HTMLDivElement>(null);
     const [scale, setScale] = useState(0.4);
 
@@ -108,7 +110,7 @@ export const IDCardMobile: React.FC<IDCardMobileProps> = ({
                             ) : (
                                 <DataBar label="Academia" value={academyName} labelClass="text-[16px]" valueClass="text-[16px]" />
                             )}
-                            <DataBar label="Faixa" value={formatBeltForDisplay(belt)} labelClass="text-[16px]" valueClass="text-[16px]" />
+                            <DataBar label="Faixa" value={formatBeltForDisplay(belt, mappings)} labelClass="text-[16px]" valueClass="text-[16px]" />
                             <DataBar label="Nascimento" value={formatDateBR(dob)} labelClass="text-[16px]" valueClass="text-[16px]" />
                         </div>
 

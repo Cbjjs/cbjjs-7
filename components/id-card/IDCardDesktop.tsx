@@ -3,6 +3,7 @@ import { DataBar } from './DataBar';
 import { formatDateBR } from '../../utils/formatters';
 import { SmartProfileImage } from './SmartProfileImage';
 import { formatBeltForDisplay } from '../../utils/beltFormatter';
+import { useBeltMappings } from '../../hooks/useBeltMappings';
 
 /**
  * [INSTRUÇÃO CRÍTICA PARA IA - NÃO MODIFICAR]: 
@@ -26,6 +27,7 @@ interface IDCardDesktopProps {
 export const IDCardDesktop: React.FC<IDCardDesktopProps> = ({ 
     fullName, profileImage, federationId, dob, belt, academyName, paymentConfirmedAt, responsavel
 }) => {
+    const { mappings } = useBeltMappings();
     const federationDate = paymentConfirmedAt ? new Date(paymentConfirmedAt) : new Date();
     const expirationDate = new Date(federationDate);
     expirationDate.setFullYear(expirationDate.getFullYear() + 1);
@@ -77,7 +79,7 @@ export const IDCardDesktop: React.FC<IDCardDesktopProps> = ({
                 <div className="flex flex-col space-y-2.5">
                     <DataBar label="Nome" value={fullName} />
                     {responsavel ? <DataBar label="Responsável" value={responsavel} /> : <DataBar label="Academia" value={academyName} />}
-                    <DataBar label="Faixa" value={formatBeltForDisplay(belt)} />
+                    <DataBar label="Faixa" value={formatBeltForDisplay(belt, mappings)} />
                     <DataBar label="Nascimento" value={formatDateBR(dob)} />
                 </div>
 
