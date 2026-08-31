@@ -1,6 +1,7 @@
 import React from 'react';
-import { User, Role, Belt, PaymentStatus } from '../types';
+import { User, Role, PaymentStatus, RegistrationStatus } from '../types';
 import { Shield, Loader2 } from 'lucide-react';
+
 import { useAuth } from '../context/AuthContext';
 
 interface SidebarProfileProps {
@@ -29,11 +30,10 @@ export const SidebarProfile: React.FC<SidebarProfileProps> = ({ user }) => {
     if (!user.isBoardingComplete) return 'Seja bem-vindo';
     if (user.role === Role.ADMIN) return 'Administrador';
 
-    const isHighBelt = [Belt.PURPLE, Belt.BROWN, Belt.BLACK].includes(user.athleteData?.belt as Belt);
-    const isAcademyOwner = user.academy?.isOwner;
-    const isProfessorRole = user.role === Role.PROFESSOR;
+    // O termo "Professor" só aparece quando o usuário possui uma academia cadastrada e APROVADA da qual ele é o responsável
+    const isApprovedAcademyOwner = user.academy?.isOwner && user.academy?.status === RegistrationStatus.APPROVED;
 
-    if (isProfessorRole || isAcademyOwner || isHighBelt) {
+    if (isApprovedAcademyOwner) {
         return `Professor ${user.athleteData?.belt ? `- Faixa ${user.athleteData.belt}` : ''}`;
     }
 

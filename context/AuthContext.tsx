@@ -105,15 +105,47 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const { data: newProfile } = await supabase.from('profiles').insert([{ id: userId, email: email, full_name: 'Atleta', role: Role.STUDENT }]).select().single();
         if (newProfile) setUser(mapProfileToUser(newProfile, { name: 'Sem Academia' }, email));
       } else {
-        let academyInfo = { name: 'Não vinculada', phone: undefined };
+        let academyInfo = { name: 'Não vinculada', phone: undefined, isOwner: false, status: profile.academy_status };
+        
+        // Verifica se o usuário é proprietário de alguma academia aprovada
+        const { data: ownedAcademies } = await supabase
+          .from('academies')
+          .select('id, name, status')
+          .eq('owner_id', userId)
+          .eq('deleted', 'no');
+
+        const hasApprovedOwnedAcademy = ownedAcademies?.some(ac => ac.status === 'APPROVED');
+        const primaryOwned = ownedAcademies?.[0];
+
         if (profile.academy_id) {
-            const { data: acData } = await supabase.from('academies').select('name, phone').eq('id', profile.academy_id).maybeSingle();
-            if (acData) { academyInfo.name = acData.name; academyInfo.phone = acData.phone; }
+            const { data: acData } = await supabase.from('academies').select('name, phone, owner_id, status').eq('id', profile.academy_id).maybeSingle();
+            if (acData) {
+              academyInfo.name = acData.name;
+              academyInfo.phone = acData.phone;
+              academyInfo.isOwner = acData.owner_id === userId;
+              if (acData.owner_id === userId) {
+                academyInfo.status = acData.status;
+              }
+            }
+        } else if (primaryOwned) {
+            academyInfo.name = primaryOwned.name;
+            academyInfo.isOwner = true;
+            academyInfo.status = primaryOwned.status as RegistrationStatus;
         }
+
         const mappedUser = mapProfileToUser(profile, academyInfo, email);
+        if (hasApprovedOwnedAcademy || academyInfo.isOwner) {
+            mappedUser.academy = {
+                name: academyInfo.name,
+                phone: academyInfo.phone,
+                isOwner: true,
+                status: (hasApprovedOwnedAcademy ? RegistrationStatus.APPROVED : (academyInfo.status as RegistrationStatus || RegistrationStatus.PENDING))
+            };
+        }
         mappedUser.profileImage = await createSignedStorageUrl(profile.profile_image_url, 'avatars');
         setUser(mappedUser);
       }
+
     } catch (err) {
       console.error("[AUTH] Erro crítico ao carregar perfil:", err);
     } finally {
