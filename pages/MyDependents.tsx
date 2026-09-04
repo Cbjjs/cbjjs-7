@@ -31,7 +31,8 @@ export const MyDependents: React.FC = () => {
     
     const [availablePlans, setAvailablePlans] = useState<PaymentPlanOption[]>([]);
     const [selectedPlan, setSelectedPlan] = useState<PaymentPlanOption | null>(null);
-    const [paymentData, setPaymentData] = useState({ pixId: '', pixCode: '', qrCodeBase64: '', amount: '0,00' });
+    const [paymentData, setPaymentData] = useState({ pixId: '', pixCode: '', qrCodeBase64: '', amount: '0,00', membershipId: '', transactionId: '' });
+    const [isRenewal, setIsRenewal] = useState(false);
     const [isGeneratingPayment, setIsGeneratingPayment] = useState(false);
 
     useEffect(() => {
@@ -75,9 +76,13 @@ export const MyDependents: React.FC = () => {
             });
             if (error) throw error;
             const pixInfo = data.data;
-            setPaymentData({ 
-                pixId: pixInfo.id || '', pixCode: pixInfo.brCode || '', 
-                qrCodeBase64: pixInfo.brCodeBase64 || '', amount: selectedPlan.price.toFixed(2).replace('.', ',') 
+            const transactionType = pixInfo.transactionType || data.transactionType;
+            setIsRenewal(transactionType === 'RENEWAL');
+            setPaymentData({
+                pixId: pixInfo.id || '', pixCode: pixInfo.brCode || '',
+                qrCodeBase64: pixInfo.brCodeBase64 || '', amount: selectedPlan.price.toFixed(2).replace('.', ','),
+                membershipId: pixInfo.membershipId || data.membershipId || '',
+                transactionId: pixInfo.transactionId || data.transactionId || ''
             });
             setIsBillingModalOpen(false);
             setIsPaymentModalOpen(true);
@@ -388,9 +393,9 @@ export const MyDependents: React.FC = () => {
                 )
             )}
             
-            <PaymentInviteModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} onPay={onInvitePay} isLoading={false} availablePlans={availablePlans} />
+            <PaymentInviteModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} onPay={onInvitePay} isLoading={false} availablePlans={availablePlans} membershipId={paymentData.membershipId} transactionId={paymentData.transactionId} isRenewal={isRenewal} />
             
-            <BillingDataModal 
+            <BillingDataModal
                 isOpen={isBillingModalOpen} 
                 onClose={() => setIsBillingModalOpen(false)} 
                 initialData={{ name: selectedChild?.fullName || '', email: user?.email || '', taxId: selectedChild?.cpf || '', phone: selectedChild?.phone || '' }} 
@@ -404,9 +409,12 @@ export const MyDependents: React.FC = () => {
                 pixId={paymentData.pixId} 
                 pixCode={paymentData.pixCode} 
                 qrCodeBase64={paymentData.qrCodeBase64} 
-                amount={paymentData.amount} 
-                dependentId={selectedChild?.id} 
-                onSuccess={() => { setIsPaymentModalOpen(false); refetch(); }} 
+                amount={paymentData.amount}
+                dependentId={selectedChild?.id}
+                membershipId={paymentData.membershipId}
+                transactionId={paymentData.transactionId}
+                isRenewal={isRenewal}
+                onSuccess={() => { setIsPaymentModalOpen(false); refetch(); }}
             />
         </div>
     );

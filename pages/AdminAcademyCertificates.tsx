@@ -24,7 +24,6 @@ import { AcademyCertificate, CertificatePaymentStatus, CertificateDeliveryStatus
 import { AdminListSkeleton, AdminErrorState } from '../components/AdminShared';
 import { formatCurrency, formatDateBR as formatDate } from '../utils/formatters';
 import { useToast } from '../context/ToastContext';
-import { supabase } from '../lib/supabase';
 import { AdminAcademyDetailsModal } from '../components/AdminAcademyDetailsModal';
 
 const MONTHS = [
@@ -82,77 +81,6 @@ export const AdminAcademyCertificates: React.FC = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Bloco corretor automático temporário de dados para a academia "LUTANDO POR VIDAS BR"
-    useEffect(() => {
-        const fixLutandoPorVidas = async () => {
-            const targetCerts = certificates.filter(
-                c => c.academy?.name === 'LUTANDO POR VIDAS BR' && c.statusPayment === 'PENDING'
-            );
-            
-            let shouldRefetch = false;
-            if (targetCerts.length > 0) {
-                // Ordena por data de criação de forma decrescente para pegar o último pedido (mais recente)
-                const sorted = [...targetCerts].sort(
-                    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-                );
-                
-                const latest = sorted[0];
-                const olderOnes = sorted.slice(1);
-                
-                // 1. Atualizar o mais recente para PAID e colocar em produção (PRODUCING)
-                await supabase
-                    .from('academy_certificates')
-                    .update({
-                        status_payment: 'PAID',
-                        paid_at: '2026-06-19T13:54:47.000Z',
-                        status_delivery: 'PRODUCING'
-                    })
-                    .eq('id', latest.id);
-                
-                // 2. Cancelar os mais antigos que estão duplicados
-                for (const old of olderOnes) {
-                    await supabase
-                        .from('academy_certificates')
-                        .update({
-                            status_payment: 'CANCELLED',
-                            status_delivery: 'CANCELLED'
-                        })
-                        .eq('id', old.id);
-                }
-                
-                shouldRefetch = true;
-            }
-
-            // 3. Garante o número de registro para a academia "LUTANDO POR VIDAS BR" se já estiver como PAID
-            const paidCert = certificates.find(
-                c => c.academy?.name === 'LUTANDO POR VIDAS BR' && c.statusPayment === 'PAID'
-            );
-            if (paidCert?.academyId) {
-                const { data: acad } = await supabase
-                    .from('academies')
-                    .select('federation_id')
-                    .eq('id', paidCert.academyId)
-                    .single();
-
-                if (acad && !acad.federation_id) {
-                    await supabase
-                        .from('academies')
-                        .update({ federation_id: '0001' })
-                        .eq('id', paidCert.academyId);
-                    shouldRefetch = true;
-                }
-            }
-
-            if (shouldRefetch) {
-                // Força o recarregamento na tela
-                refetch();
-            }
-        };
-
-        if (certificates.length > 0) {
-            fixLutandoPorVidas();
-        }
-    }, [certsData]);
 
     const paidCertificates = certificates.filter(c => c.statusPayment === CertificatePaymentStatus.PAID);
     const totalPaidCount = paidCertificates.length;

@@ -152,8 +152,7 @@ export function useMyDependents() {
                 address: { zip: formData.zip, street: formData.street, city: formData.city, state: formData.state, number: formData.number, complement: formData.complement },
                 belt: formData.belt,
                 academy_id: formData.academyId,
-                academy_status: 'PENDING',
-                payment_status: 'PENDING'
+                academy_status: 'PENDING'
             }]).select().single();
             if (error) throw error;
             addToast('success', "Filho cadastrado com sucesso!");

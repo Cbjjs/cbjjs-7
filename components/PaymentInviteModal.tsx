@@ -17,6 +17,9 @@ interface PaymentInviteModalProps {
   onPay: (plan: PaymentPlanOption) => void;
   isLoading: boolean;
   availablePlans?: PaymentPlanOption[];
+  membershipId?: string;
+  transactionId?: string;
+  isRenewal?: boolean;
 }
 
 export const PaymentInviteModal: React.FC<PaymentInviteModalProps> = ({
@@ -24,7 +27,10 @@ export const PaymentInviteModal: React.FC<PaymentInviteModalProps> = ({
   onClose,
   onPay,
   isLoading,
-  availablePlans = []
+  availablePlans = [],
+  membershipId,
+  transactionId,
+  isRenewal = false
 }) => {
   const [selectedPlanId, setSelectedPlanId] = useState<'DIGITAL' | 'PRINTED' | null>(
       availablePlans.find(p => p.id === 'PRINTED')?.id || availablePlans[0]?.id || null
@@ -57,8 +63,8 @@ export const PaymentInviteModal: React.FC<PaymentInviteModalProps> = ({
         </button>
 
         <div className="text-center mb-8">
-            <h3 className="text-2xl font-black dark:text-white tracking-tight">Finalizar Afiliação</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1">Escolha como deseja receber sua carteirinha.</p>
+            <h3 className="text-2xl font-black dark:text-white tracking-tight">{isRenewal ? 'Renovar Filiação' : 'Finalizar Afiliação'}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1">{isRenewal ? 'Renove sua filiação anual e escolha como deseja receber sua carteirinha.' : 'Escolha como deseja receber sua carteirinha para concluir a filiação inicial.'}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">

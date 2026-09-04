@@ -33,7 +33,8 @@ export const Profile: React.FC = () => {
   
   const [availablePlans, setAvailablePlans] = useState<PaymentPlanOption[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<PaymentPlanOption | null>(null);
-  const [paymentData, setPaymentData] = useState({ pixId: '', pixCode: '', qrCodeBase64: '', amount: '0,00' });
+  const [paymentData, setPaymentData] = useState({ pixId: '', pixCode: '', qrCodeBase64: '', amount: '0,00', membershipId: '', transactionId: '' });
+  const [isRenewal, setIsRenewal] = useState(false);
   const [isGeneratingPayment, setIsGeneratingPayment] = useState(false);
   const [isCheckingPayment, setIsCheckingPayment] = useState(false);
 
@@ -206,9 +207,13 @@ export const Profile: React.FC = () => {
           });
           if (error) throw error;
           const pixInfo = data.data;
+          const transactionType = pixInfo.transactionType || data.transactionType;
+          setIsRenewal(transactionType === 'RENEWAL');
           setPaymentData({
               pixId: pixInfo.id || '', pixCode: pixInfo.brCode || '',
-              qrCodeBase64: pixInfo.brCodeBase64 || '', amount: selectedPlan.price.toFixed(2).replace('.', ',')
+              qrCodeBase64: pixInfo.brCodeBase64 || '', amount: selectedPlan.price.toFixed(2).replace('.', ','),
+              membershipId: pixInfo.membershipId || data.membershipId || '',
+              transactionId: pixInfo.transactionId || data.transactionId || ''
           });
           setIsBillingModalOpen(false);
           setIsPaymentModalOpen(true);
@@ -332,9 +337,9 @@ export const Profile: React.FC = () => {
         isSubmitting={isSubmitting}
       />
 
-      <PaymentInviteModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} onPay={onInvitePay} isLoading={false} availablePlans={availablePlans} />
+      <PaymentInviteModal isOpen={isInviteModalOpen} onClose={() => setIsInviteModalOpen(false)} onPay={onInvitePay} isLoading={false} availablePlans={availablePlans} membershipId={paymentData.membershipId} transactionId={paymentData.transactionId} isRenewal={isRenewal} />
       
-      <BillingDataModal 
+      <BillingDataModal
         isOpen={isBillingModalOpen} 
         onClose={() => setIsBillingModalOpen(false)} 
         initialData={{ name: user.fullName, email: user.email, taxId: user.cpf || '', phone: user.phone || '' }} 
@@ -342,7 +347,7 @@ export const Profile: React.FC = () => {
         isLoading={isGeneratingPayment}
       />
 
-      <PaymentModal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} pixId={paymentData.pixId} pixCode={paymentData.pixCode} qrCodeBase64={paymentData.qrCodeBase64} amount={paymentData.amount} onSuccess={() => refreshProfile()} />
+      <PaymentModal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} pixId={paymentData.pixId} pixCode={paymentData.pixCode} qrCodeBase64={paymentData.qrCodeBase64} amount={paymentData.amount} membershipId={paymentData.membershipId} transactionId={paymentData.transactionId} isRenewal={isRenewal} onSuccess={() => refreshProfile()} />
     </div>
   );
 };

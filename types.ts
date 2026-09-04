@@ -59,6 +59,94 @@ export enum PaymentStatus {
   OVERDUE = 'OVERDUE'
 }
 
+export enum AnnualMembershipType {
+  INITIAL = 'INITIAL',
+  RENEWAL = 'RENEWAL'
+}
+
+export enum AnnualMembershipStatus {
+  PENDING = 'PENDING',
+  ACTIVE = 'ACTIVE',
+  EXPIRED = 'EXPIRED',
+  CANCELLED = 'CANCELLED'
+}
+
+export enum AnnualMembershipPaymentStatus {
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  EXEMPT = 'EXEMPT',
+  OVERDUE = 'OVERDUE',
+  CANCELLED = 'CANCELLED'
+}
+
+export enum AnnualMembershipTransactionType {
+  INITIAL = 'INITIAL',
+  RENEWAL = 'RENEWAL',
+  MANUAL = 'MANUAL'
+}
+
+export enum AnnualMembershipTransactionStatus {
+  PENDING = 'PENDING',
+  PAID = 'PAID',
+  CANCELLED = 'CANCELLED',
+  REFUNDED = 'REFUNDED',
+  FAILED = 'FAILED',
+  EXPIRED = 'EXPIRED'
+}
+
+export type AnnualMembershipOwner =
+  | { profileId: string; dependentId: null }
+  | { profileId: null; dependentId: string };
+
+export type AnnualMembership = AnnualMembershipOwner & {
+  id: string;
+  membershipPeriod: number;
+  membershipType: AnnualMembershipType;
+  status: AnnualMembershipStatus;
+  paymentStatus: AnnualMembershipPaymentStatus;
+  validFrom: string | null;
+  validUntil: string | null;
+  activatedAt: string | null;
+  exemptionReason: string | null;
+  exemptionGrantedBy: string | null;
+  exemptionGrantedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export interface AnnualMembershipSnapshot {
+  id: string;
+  membershipId: string;
+  revision: number;
+  fullName: string;
+  photoPath: string | null;
+  federationId: number | null;
+  dateOfBirth: string | null;
+  belt: string | null;
+  academyName: string | null;
+  responsibleName: string | null;
+  validFrom: string | null;
+  validUntil: string | null;
+  issuedAt: string;
+  snapshotData: Record<string, unknown>;
+}
+
+export interface AnnualMembershipTransaction {
+  id: string;
+  membershipId: string;
+  transactionType: AnnualMembershipTransactionType;
+  provider: string;
+  externalId: string | null;
+  idempotencyKey: string | null;
+  status: AnnualMembershipTransactionStatus;
+  amountCents: number;
+  plan: string | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+  paidAt: string | null;
+}
+
 export interface UserDocument {
   url?: string;
   status: DocumentStatus;
