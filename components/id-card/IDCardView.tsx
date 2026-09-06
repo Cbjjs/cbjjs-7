@@ -10,6 +10,7 @@ interface IDCardViewProps {
     belt: string;
     academyName: string;
     paymentConfirmedAt?: string;
+    validUntil?: string;
     responsavel?: string;
 }
 

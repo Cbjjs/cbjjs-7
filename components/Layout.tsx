@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { Role } from '../types';
 import { SidebarProfile } from './SidebarProfile';
+import { AnnualMembershipRenewalBanner } from './AnnualMembershipRenewalBanner';
 import {
   Menu, X, Users, Calendar, LogOut, Sun, Moon, Shield, Award, CreditCard, Building, School, Settings, UserCheck, UserPlus, Printer, Contact, Scan, BookOpen, FileBadge, Mail, UsersRound
 } from 'lucide-react';
@@ -168,6 +169,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate
 
       <main className="flex-1 overflow-y-auto h-full pt-20 md:pt-0 bg-slate-50 dark:bg-slate-950 relative scroll-smooth print:p-0">
         <div className="p-4 md:p-10 max-w-7xl mx-auto min-h-full pb-24 print:p-0 print:pb-0">
+            <AnnualMembershipRenewalBanner onNavigate={onNavigate} />
             {children}
         </div>
       </main>

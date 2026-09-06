@@ -24,11 +24,12 @@ interface IDCardMobileProps {
     belt: string;
     academyName: string;
     paymentConfirmedAt?: string;
+    validUntil?: string;
     responsavel?: string;
 }
 
-export const IDCardMobile: React.FC<IDCardMobileProps> = ({ 
-    fullName, profileImage, federationId, dob, belt, academyName, paymentConfirmedAt, responsavel
+export const IDCardMobile: React.FC<IDCardMobileProps> = ({
+    fullName, profileImage, federationId, dob, belt, academyName, paymentConfirmedAt, validUntil, responsavel
 }) => {
     const { mappings } = useBeltMappings();
     const containerRef = useRef<HTMLDivElement>(null);
@@ -52,8 +53,10 @@ export const IDCardMobile: React.FC<IDCardMobileProps> = ({
     }, []);
 
     const federationDate = paymentConfirmedAt ? new Date(paymentConfirmedAt) : new Date();
-    const expirationDate = new Date(federationDate);
-    expirationDate.setFullYear(expirationDate.getFullYear() + 1);
+    const expirationDate = validUntil
+        ? new Date(validUntil.includes('T') ? validUntil : `${validUntil}T00:00:00`)
+        : new Date(federationDate);
+    if (!validUntil) expirationDate.setFullYear(expirationDate.getFullYear() + 1);
     const formattedId = federationId ? String(federationId).padStart(6, '0') : '---';
 
     const displayFullName = formatNameForMobile(fullName);

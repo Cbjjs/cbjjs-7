@@ -9,6 +9,7 @@ import { useSupabaseQuery } from '../hooks/useSupabaseQuery';
 import { IDCardView } from '../components/id-card/IDCardView';
 import { MembershipBenefits } from '../components/id-card/MembershipBenefits';
 import { PrintPreviewModal } from '../components/admin/id-cards/PrintPreviewModal';
+import { AnnualMembershipHistory } from '../components/AnnualMembershipHistory';
 import { createSignedStorageUrl } from '../utils/storage';
 
 interface MyIDCardProps {
@@ -149,6 +150,7 @@ export const MyIDCard: React.FC<MyIDCardProps> = ({ onNavigate }) => {
                     </>
                 )}
             </div>
+            <AnnualMembershipHistory />
             <MembershipBenefits />
         </div>
 
