@@ -319,7 +319,7 @@ export const AnnualMembershipHistory: React.FC<AnnualMembershipHistoryProps> = (
                   </div>
                   {item.snapshot ? (
                     <button type="button" onClick={() => setSelectedItem(item)} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-cbjjs-blue px-4 py-2.5 text-xs font-black text-white transition-colors hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-cbjjs-blue focus:ring-offset-2 dark:focus:ring-offset-slate-900">
-                      <Eye size={16} aria-hidden="true" /> Visualizar snapshot
+                      <Eye size={16} aria-hidden="true" /> Visualizar carteirinha
                     </button>
                   ) : (
                     <span className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gray-100 px-4 py-2.5 text-xs font-bold text-gray-500 dark:bg-slate-800 dark:text-gray-400">
